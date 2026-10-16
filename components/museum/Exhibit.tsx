@@ -3,7 +3,7 @@ import { Float, Html } from "@react-three/drei";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { AVATAR_Z, exhibits, halls, viewingZ, walkTo, type Exhibit as Ex } from "@/lib/museum";
+import { AVATAR_Z, PORTRAIT_X, exhibits, halls, viewingZ, walkTo, type Exhibit as Ex } from "@/lib/museum";
 import { museum, useMuseum } from "@/lib/store";
 import Artifact from "./Artifacts";
 import Portrait from "./Portrait";
@@ -174,6 +174,14 @@ export default function Exhibit({ e, x, df = 4.2 }: { e: Ex; x: number; df?: num
   const selected = useMuseum((s) => s.selected === e.id);
   const hovered = useMuseum((s) => s.hovered === e.id);
   const numeral = halls.find((h) => h.id === e.hall)?.numeral ?? "";
+  // the skills behind each exhibit, shown right on its banner
+  const pl = e.payload;
+  const skills: string[] =
+    pl.kind === "tech" ? pl.g.items.map((t) => t.name)
+    : pl.kind === "project" ? pl.p.stack
+    : pl.kind === "service" ? pl.s.tags
+    : pl.kind === "job" ? pl.q.stack
+    : [];
 
   useFrame(() => {
     const d = camera.position.z - e.z; // >0 when exhibit is ahead
@@ -181,7 +189,9 @@ export default function Exhibit({ e, x, df = 4.2 }: { e: Ex; x: number; df?: num
     const n = d > 0.3 && d < 34 && (e.art === "avatar" || camera.position.z < AVATAR_Z + 0.3);
     if (n !== near) setNear(n);
     if (banner.current) {
-      const o = Math.max(0, Math.min(1, (32 - d) / 10, (d - 0.3) / 1.5));
+      // fade out banners you're walking right past, so they never fill the screen
+      const sel = museum.get().selected === e.id;
+      const o = sel ? 1 : Math.max(0, Math.min(1, (32 - d) / 10, (d - 1.8) / 2.2));
       banner.current.style.opacity = String(o);
       banner.current.style.pointerEvents = o > 0.3 ? "auto" : "none";
     }
@@ -197,6 +207,7 @@ export default function Exhibit({ e, x, df = 4.2 }: { e: Ex; x: number; df?: num
       <span className="banner-no">No. {String(e.no).padStart(2, "0")} · Gallery {numeral}</span>
       <b>{e.title}</b>
       <small>{e.subtitle}</small>
+      {skills.length > 0 && <div className={`banner-skills ${e.payload.kind === "tech" ? "many" : ""}`}>{skills.map((t) => <span key={t}>{t}</span>)}</div>}
       <span className="banner-cta">{selected ? "Viewing" : "Inspect"} ▸</span>
     </div>
   );
@@ -216,6 +227,7 @@ export default function Exhibit({ e, x, df = 4.2 }: { e: Ex; x: number; df?: num
               <b>{e.title}</b>
               <i>{e.payload.kind === "job" ? e.payload.q.title : ""}</i>
               <small>{e.subtitle}</small>
+              {skills.length > 0 && <div className="banner-skills">{skills.map((t) => <span key={t}>{t}</span>)}</div>}
               <span className="banner-cta">Read the story ▸</span>
             </div>
           </Html>
@@ -231,7 +243,7 @@ export default function Exhibit({ e, x, df = 4.2 }: { e: Ex; x: number; df?: num
 
   if (isAvatar) {
     return (
-      <group position={[0, 0, e.z]}>
+      <group position={[PORTRAIT_X, 0, e.z]} rotation={[0, 0.32, 0]}>
         <Spotlight color={e.accent} on={selected || hovered} />
         <group onPointerOver={over} onPointerOut={out} onClick={click}>
           <Portrait />
@@ -260,7 +272,7 @@ export default function Exhibit({ e, x, df = 4.2 }: { e: Ex; x: number; df?: num
         {jar && <BellJar />}
         {e.art === "vitrine" && e.payload.kind === "tech" && <Vitrine color={e.accent} count={e.payload.g.items.length} />}
         {!isDesk && e.art !== "vitrine" && (
-          <Float speed={1.6} rotationIntensity={0.15} floatIntensity={0.35} floatingRange={[-0.05, 0.05]}>
+          <Float speed={1.6} rotationIntensity={0.15} floatIntensity={0.18} floatingRange={[-0.025, 0.025]}>
             <group position={[0, 1.78, 0]}><Artifact kind={e.art} color={e.accent} /></group>
           </Float>
         )}

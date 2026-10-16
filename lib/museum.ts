@@ -58,10 +58,11 @@ const LIGHT: Record<string, string> = {
 
 /* The visitor's host: Rajan's 3D avatar greets them in the entrance vestibule */
 export const AVATAR_Z = -2.2;
+export const PORTRAIT_X = -1.9; // the easel stands to the left so the visitor walks straight past
 let no = 1;
 exhibits.push({
   id: "about", no: no++, hall: "foyer", title: profile.name, subtitle: profile.role,
-  side: 0, z: AVATAR_Z, art: "avatar", accent: holo.cyan, payload: { kind: "about" },
+  side: -1, z: AVATAR_Z, art: "avatar", accent: holo.cyan, payload: { kind: "about" },
 });
 
 let z = -6.5;

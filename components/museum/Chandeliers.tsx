@@ -111,7 +111,7 @@ function LightPool() {
   const col = useMemo(() => new THREE.Color(), []);
   useFrame(() => {
     const cz = camera.position.z;
-    const near = [...chandelierZs].sort((a, b) => Math.abs(a - (cz - 5)) - Math.abs(b - (cz - 5))).slice(0, 4);
+    const near = [...chandelierZs].sort((a, b) => Math.abs(a - (cz - 5)) - Math.abs(b - (cz - 5))).slice(0, 3);
     near.forEach((z, i) => {
       const l = lights.current[i];
       if (!l) return;
@@ -122,8 +122,8 @@ function LightPool() {
   });
   return (
     <>
-      {[0, 1, 2, 3].map((i) => (
-        <pointLight key={i} ref={(r) => { lights.current[i] = r; }} intensity={26} distance={15} decay={1.5} color="#ffd9a0" />
+      {[0, 1, 2].map((i) => (
+        <pointLight key={i} ref={(r) => { lights.current[i] = r; }} intensity={30} distance={16} decay={1.5} color="#ffd9a0" />
       ))}
     </>
   );

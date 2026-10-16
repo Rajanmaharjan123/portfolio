@@ -334,3 +334,51 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .ticket .ticket-card .rule { margin: 6px 0; }
   .ticket .ticket-links { margin-top: 6px; }
 }
+
+/* skill chips engraved on banners */
+.banner-skills { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 5px; margin-top: 10px; }
+.banner-skills span { font-family: var(--mono); font-size: 11px; line-height: 1; padding: 4px 7px; color: #f1dfb4; border: 1px solid rgba(216,180,106,.45); background: rgba(216,180,106,.08); border-radius: 2px; }
+.banner-skills.many span { font-size: 10.5px; padding: 3px 6px; }
+.banner.on .banner-skills span, .banner:hover .banner-skills span { border-color: color-mix(in srgb, var(--accent) 60%, #d8b46a); }
+.portrait .banner-skills { margin-top: 14px; }
+.portrait .banner-skills span { font-size: 12px; }
+
+/* ---------- Loader: crest, progress, then gilded doors swing open ---------- */
+.loader { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; pointer-events: auto; perspective: 1400px; }
+.loader .door { position: absolute; top: 0; bottom: 0; width: 50.5%; background:
+    radial-gradient(ellipse at 50% 40%, rgba(255,215,140,.06), transparent 60%),
+    linear-gradient(90deg, #1c110c, #2a1912 50%, #1c110c);
+  transition: transform 1.3s cubic-bezier(.65,0,.25,1), opacity 1.3s ease; }
+.loader .door i { position: absolute; inset: 7% 12%; border: 2px solid rgba(201,164,92,.55); box-shadow: inset 0 0 0 8px rgba(0,0,0,.25), inset 0 0 0 9px rgba(201,164,92,.25); }
+.loader .door.left { left: 0; transform-origin: left center; border-right: 1px solid rgba(201,164,92,.5); }
+.loader .door.right { right: 0; transform-origin: right center; border-left: 1px solid rgba(201,164,92,.5); }
+.loader.opening .door.left { transform: rotateY(78deg); opacity: 0; }
+.loader.opening .door.right { transform: rotateY(-78deg); opacity: 0; }
+.loader.opening { pointer-events: none; }
+.loader-center { position: relative; z-index: 2; width: min(340px, 80vw); text-align: center; transition: opacity .5s ease, transform .5s ease; }
+.loader.opening .loader-center { opacity: 0; transform: scale(.96); }
+.loader-crest { width: 84px; height: 84px; margin: 0 auto 16px; display: grid; place-items: center; font-family: var(--caps); font-size: 26px; font-weight: 700; color: var(--gold-2); border: 1px solid var(--gold); border-radius: 50%;
+  box-shadow: inset 0 0 0 5px #1c110c, inset 0 0 0 6px rgba(201,164,92,.55), 0 0 40px rgba(232,201,131,.18); animation: crest 2.4s ease-in-out infinite; }
+@keyframes crest { 50% { box-shadow: inset 0 0 0 5px #1c110c, inset 0 0 0 6px rgba(201,164,92,.55), 0 0 60px rgba(232,201,131,.35); } }
+.loader-kicker { font-family: var(--caps); font-size: 12px; letter-spacing: .3em; text-transform: uppercase; color: var(--text-2); }
+.loader-bar { height: 2px; margin: 18px 0 8px; background: rgba(201,164,92,.18); overflow: hidden; }
+.loader-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--gold-deep), var(--gold-2), var(--holo)); box-shadow: 0 0 10px rgba(232,201,131,.6); transition: width .2s linear; }
+.loader-meta { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--dim); }
+
+/* everything else eases in after the doors open */
+.hud, .minimap, .ticket-card { transition: opacity .8s ease .2s, transform .8s cubic-bezier(.2,.7,.2,1) .2s; }
+body.is-loading .hud { opacity: 0; transform: translateY(-10px); }
+body.is-loading .minimap { opacity: 0; transform: translate(-50%, 10px); }
+body.is-loading .ticket-card { opacity: 0; transform: translateY(16px); }
+body.is-loading { overflow: hidden; }
+
+/* grouped skills inside the introduction */
+.ticket-skills { display: grid; gap: 8px; }
+.ticket-skill-group b { display: block; font-family: var(--serif); font-size: 15px; color: #2b2018; margin-bottom: 3px; }
+.ticket-skill-group .ticket-chips span { cursor: default; }
+
+/* smoother UI feel */
+.btn, .banner, .plaque, .mm-hall, .guide-hall li button { will-change: transform; }
+.pamphlet { transition: transform .55s cubic-bezier(.2,.8,.2,1), opacity .35s ease; }
+.guide-paper { animation-duration: .45s; }
+html { scroll-behavior: auto; }

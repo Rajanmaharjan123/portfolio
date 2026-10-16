@@ -204,16 +204,16 @@ export function glowTex() {
 const marbleMap = isClient ? marbleTex() : null;
 
 export const M = {
-  gold: new THREE.MeshPhysicalMaterial({ color: "#d8b46a", metalness: 1, roughness: 0.24, clearcoat: 0.4, clearcoatRoughness: 0.2 }),
+  gold: new THREE.MeshStandardMaterial({ color: "#d8b46a", metalness: 1, roughness: 0.24 }),
   goldMatte: new THREE.MeshStandardMaterial({ color: "#b8924a", metalness: 0.95, roughness: 0.42 }),
   brass: new THREE.MeshStandardMaterial({ color: "#a8823f", metalness: 1, roughness: 0.32 }),
   bronze: new THREE.MeshStandardMaterial({ color: "#8a5a32", metalness: 0.9, roughness: 0.38 }),
-  marble: new THREE.MeshPhysicalMaterial({ color: "#ffffff", map: marbleMap, roughness: 0.3, clearcoat: 0.6, clearcoatRoughness: 0.15 }),
-  marbleDark: new THREE.MeshPhysicalMaterial({ color: "#2a2522", roughness: 0.25, clearcoat: 0.7, clearcoatRoughness: 0.1 }),
-  verde: new THREE.MeshPhysicalMaterial({ color: "#1f3b33", roughness: 0.25, clearcoat: 0.7 }),
+  marble: new THREE.MeshStandardMaterial({ color: "#ffffff", map: marbleMap, roughness: 0.28, metalness: 0.02 }),
+  marbleDark: new THREE.MeshStandardMaterial({ color: "#2a2522", roughness: 0.22, metalness: 0.1 }),
+  verde: new THREE.MeshStandardMaterial({ color: "#1f3b33", roughness: 0.25 }),
   ivory: new THREE.MeshStandardMaterial({ color: "#f6efdf", roughness: 0.45 }),
   wood: new THREE.MeshStandardMaterial({ color: "#3b2416", roughness: 0.5 }),
-  walnut: new THREE.MeshPhysicalMaterial({ color: "#2e1a10", roughness: 0.35, clearcoat: 0.5 }),
+  walnut: new THREE.MeshStandardMaterial({ color: "#2e1a10", roughness: 0.35 }),
   velvet: new THREE.MeshStandardMaterial({ color: "#7a1820", roughness: 0.95 }),
   ink: new THREE.MeshStandardMaterial({ color: "#14100d", roughness: 0.6 }),
   canvasDark: new THREE.MeshStandardMaterial({ color: "#1d1712", roughness: 0.75 }),

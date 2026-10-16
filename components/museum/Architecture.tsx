@@ -222,7 +222,7 @@ export default function Architecture() {
       {/* inlaid marble floor + palace runner */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, MID]}>
         <planeGeometry args={[HALF_W * 2, LEN]} />
-        <meshPhysicalMaterial map={floor} roughness={0.16} clearcoat={0.8} clearcoatRoughness={0.08} />
+        <meshStandardMaterial map={floor} roughness={0.14} metalness={0.04} />
       </mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.012, MID]}>
         <planeGeometry args={[2.6, LEN]} />
@@ -271,7 +271,7 @@ export default function Architecture() {
       <mesh position={[0, 4.5, FRONT]} rotation={[0, Math.PI, 0]}><planeGeometry args={[HALF_W * 2, 9]} /><meshStandardMaterial map={damask} roughness={0.7} /></mesh>
 
       {/* dust motes in the candlelight */}
-      <Sparkles count={200} scale={[HALF_W * 2, 6, LEN]} position={[0, 3.5, MID]} size={2} speed={0.12} opacity={0.45} color="#ffe2a8" />
+      <Sparkles count={110} scale={[HALF_W * 2, 6, LEN]} position={[0, 3.5, MID]} size={2} speed={0.12} opacity={0.45} color="#ffe2a8" />
     </group>
   );
 }

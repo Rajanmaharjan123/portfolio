@@ -2,10 +2,11 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { exhibits, halls, LENGTH, PX_PER_UNIT, START_Z, travel, viewingZ, walkTo, zToProgress } from "@/lib/museum";
-import { impact, profile, quests } from "@/lib/data";
+import { impact, profile, quests, techGroups } from "@/lib/data";
 import { museum, useMuseum } from "@/lib/store";
 import Pamphlet, { go } from "./Pamphlet";
 import Catalogue from "./Catalogue";
+import Loader from "./Loader";
 
 const Scene = dynamic(() => import("./Scene"), { ssr: false });
 
@@ -99,6 +100,7 @@ export default function Museum() {
   return (
     <>
       {webgl && <div className="stage"><Scene /></div>}
+      <Loader />
       <div className="vignette" />
 
       {/* Entrance ticket — the hero */}
@@ -133,9 +135,14 @@ export default function Museum() {
               <li>Real-time systems: MQTT + Protobuf chat, live map tracking, eSewa / Khalti / Prabhu Pay payments.</li>
             </ul>
 
-            <h3 className="ticket-h">Core stack</h3>
-            <div className="ticket-chips">
-              {["Swift", "SwiftUI", "UIKit", "Combine", "ARKit", "RealityKit", "RoomPlan · LiDAR", "MapKit", "Core Location", "MQTT", "XCFramework", "Flutter"].map((t) => <span key={t}>{t}</span>)}
+            <h3 className="ticket-h">Skills · {techGroups.reduce((n, g) => n + g.items.length, 0)} technologies</h3>
+            <div className="ticket-skills">
+              {techGroups.map((g) => (
+                <div key={g.id} className="ticket-skill-group">
+                  <b>{g.label}</b>
+                  <div className="ticket-chips">{g.items.map((t) => <span key={t.name} title={t.note}>{t.name}</span>)}</div>
+                </div>
+              ))}
             </div>
 
             <h3 className="ticket-h">Background</h3>

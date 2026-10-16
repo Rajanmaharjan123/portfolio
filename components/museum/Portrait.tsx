@@ -1,6 +1,7 @@
 "use client";
 import { useMemo } from "react";
 import * as THREE from "three";
+import { museum } from "@/lib/store";
 import { M } from "./materials";
 
 /* Rajan's portrait: a framed painting on a walnut easel, lit by a brass picture light. */
@@ -8,12 +9,12 @@ export const PORTRAIT = { w: 1.35, h: 1.8, y: 2.35 }; // canvas size & centre he
 
 export default function Portrait() {
   const map = useMemo(() => {
-    const t = new THREE.TextureLoader().load("/avatar/portrait.jpg");
+    const t = new THREE.TextureLoader().load("/avatar/portrait.jpg", () => museum.set({ portrait: true }), undefined, () => museum.set({ portrait: true }));
     t.colorSpace = THREE.SRGBColorSpace;
     t.anisotropy = 8;
     return t;
   }, []);
-  const paint = useMemo(() => new THREE.MeshStandardMaterial({ map, emissiveMap: map, emissive: new THREE.Color("#ffffff"), emissiveIntensity: 0.35, roughness: 0.75 }), [map]);
+  const paint = useMemo(() => new THREE.MeshStandardMaterial({ map, emissiveMap: map, emissive: new THREE.Color("#ffffff"), emissiveIntensity: 0.5, roughness: 0.75 }), [map]);
   const { w, h, y } = PORTRAIT;
   const b = 0.17; // frame moulding width
 
@@ -57,7 +58,6 @@ export default function Portrait() {
           {[-0.3, 0.3].map((x) => <mesh key={x} position={[x, -0.12, -0.16]} rotation={[0.9, 0, 0]} material={M.brass}><cylinderGeometry args={[0.012, 0.012, 0.4, 8]} /></mesh>)}
         </group>
       </group>
-      <pointLight position={[0, y + h / 2 + 0.4, 1.0]} intensity={4} distance={4} decay={2} color="#ffe2b0" />
     </group>
   );
 }

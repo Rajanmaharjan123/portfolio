@@ -31,6 +31,7 @@ npm run build      # static site written to /out
 ## Files
 | File | What |
 |---|---|
+| `components/museum/Loader.tsx` | Opening screen: crest + progress, then gilded doors swing open once the scene is ready |
 | `components/museum/Museum.tsx` | Page shell: entrance ticket, HUD, minimap, floor guide, keyboard, scroll length |
 | `components/museum/Scene.tsx` | Canvas, lighting, first-person walking camera |
 | `components/museum/Architecture.tsx` | Palace shell: inlaid marble floor, runner carpet, damask walls, gilt panels, columns, cornice, frescoed vault, sconces, arches |

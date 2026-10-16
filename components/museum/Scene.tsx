@@ -56,6 +56,11 @@ function Walker() {
     pos.current = smoothDamp(pos.current, goal, vel.current, size.width < 760 ? 0.6 : 0.45, dt);
     camera.position.set(0, 1.65, pos.current);
 
+    if (look.vr && look.orient.has) {
+      vrLook(camera, dt, size.width / size.height < 0.8 ? 2.1 : 2.75);
+      return;
+    }
+
     // mouse-look is smoothed too, so the view drifts instead of snapping
     const k = 1 - Math.exp(-dt * (look.source === "gyro" ? 7 : 3));
     lookS.current.x += (look.x - lookS.current.x) * k;
@@ -84,6 +89,80 @@ function Walker() {
     camera.lookAt(tmp.copy(camera.position).add(dir));
   });
   return null;
+}
+
+/* ---------- VR tour: the phone becomes a window into the museum (3-DoF, 360°) ---------- */
+const _e = new THREE.Euler(), _q = new THREE.Quaternion(), _qs = new THREE.Quaternion(), _off = new THREE.Quaternion();
+const _qx = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)); // camera looks out the back of the device
+const _zee = new THREE.Vector3(0, 0, 1), _yAxis = new THREE.Vector3(0, 1, 0), _fwd = new THREE.Vector3(), _to = new THREE.Vector3();
+const D = THREE.MathUtils.DEG2RAD;
+let dwellId: string | null = null, dwellT = 0, lastOpened: string | null = null, awayT = 0;
+
+function deviceQuat(out: THREE.Quaternion) {
+  const o = look.orient;
+  _e.set(o.b * D, o.a * D, -o.g * D, "YXZ");
+  out.setFromEuler(_e).multiply(_qx).multiply(_qs.setFromAxisAngle(_zee, -o.screen * D));
+  return out;
+}
+
+/* where each exhibit "is" for gaze-selection purposes (its banner / painting / object) */
+function gazePoints(e: (typeof exhibits)[number], x: number): [number, number, number][] {
+  if (e.art === "avatar") return [[PORTRAIT_X, 2.3, AVATAR_Z]];
+  if (e.art === "desk") return [[0, 1.8, e.z]];
+  if (e.wall) return [[e.side * (HALF_W - 0.1), 2.5, e.z]];
+  if (e.payload.kind === "tech") return [[e.side * x, 1.8, e.z]];
+  return [[e.side * x, 1.8, e.z], [e.side * (x + (x < 2.5 ? 1.15 : 1.48)), 1.85, e.z + (x < 2.5 ? 0.7 : 0.91)]];
+}
+
+function vrLook(camera: THREE.Camera, dt: number, x: number) {
+  deviceQuat(_q);
+  if (look.recenter) {
+    // whichever way the phone points now becomes "straight down the hall"
+    _fwd.set(0, 0, -1).applyQuaternion(_q);
+    const heading = Math.atan2(-_fwd.x, -_fwd.z);
+    _off.setFromAxisAngle(_yAxis, -heading);
+    look.recenter = false;
+    camera.quaternion.copy(_off).multiply(_q);
+  }
+  _q.premultiply(_off);
+  camera.quaternion.slerp(_q, 1 - Math.exp(-dt * 14)); // light smoothing kills sensor jitter, keeps it responsive
+
+  // which way are we facing along the hall?
+  _fwd.set(0, 0, -1).applyQuaternion(camera.quaternion);
+  look.facing = _fwd.z <= 0 ? 1 : -1;
+
+  // gaze-to-open: hold an exhibit in the centre of view for ~1.4 s
+  let best: string | null = null, bestA = 0.16; // ~9°
+  for (const e of exhibits) {
+    const dz = Math.abs(e.z - camera.position.z);
+    if (dz > 10) continue;
+    for (const [px, py, pz] of gazePoints(e, x)) {
+      _to.set(px - camera.position.x, py - camera.position.y, pz - camera.position.z);
+      const dist = _to.length();
+      if (dist > 9.5 || dist < 0.6) continue;
+      const a = _fwd.angleTo(_to);
+      if (a < bestA) { bestA = a; best = e.id; }
+    }
+  }
+  const sel = museum.get().selected;
+  // looking well away from the open exhibit for a moment closes its pamphlet
+  const selEx = sel ? exhibits.find((e) => e.id === sel) : null;
+  if (selEx) {
+    const [px, py, pz] = gazePoints(selEx, x)[0];
+    _to.set(px - camera.position.x, py - camera.position.y, pz - camera.position.z);
+    awayT = _fwd.angleTo(_to) > 1.0 ? awayT + dt : 0;
+    if (awayT > 1.6) { museum.set({ selected: null }); awayT = 0; }
+  } else awayT = 0;
+  if (best && best !== sel && best !== lastOpened) {
+    if (best !== dwellId) { dwellId = best; dwellT = 0; }
+    dwellT += dt;
+    look.gaze.id = best; look.gaze.p = Math.min(1, dwellT / 1.4);
+    if (dwellT >= 1.4) { museum.set({ selected: best }); lastOpened = best; dwellT = 0; look.gaze.p = 0; }
+  } else {
+    if (best !== lastOpened) lastOpened = best === null ? null : lastOpened;
+    dwellId = null; dwellT = 0; look.gaze.id = best === sel ? best : null; look.gaze.p = 0;
+  }
+  if (museum.get().hovered !== (look.gaze.id ?? null)) museum.set({ hovered: look.gaze.id });
 }
 
 /* Tells the page the first real frames are on screen (after shaders compile) */

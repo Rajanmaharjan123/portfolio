@@ -431,3 +431,16 @@ html { scroll-behavior: auto; }
 }
 /* stop iOS from highlighting / zooming while walking */
 .stage, .mpad, .mgyro { -webkit-user-select: none; user-select: none; }
+
+/* ---------- VR tour ---------- */
+.vr-reticle { position: fixed; left: 50%; top: 50%; z-index: 21; width: 44px; height: 44px; margin: -22px 0 0 -22px; pointer-events: none; transition: opacity .3s; }
+.vr-reticle.dim { opacity: .25; }
+.vr-reticle svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.vr-reticle .dot { fill: #f3d995; filter: drop-shadow(0 0 4px rgba(0,0,0,.8)); }
+.vr-reticle .track { fill: none; stroke: rgba(255,240,210,.35); stroke-width: 1.5; }
+.vr-reticle .fill { fill: none; stroke: var(--holo); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 113; stroke-dashoffset: 113; filter: drop-shadow(0 0 6px rgba(95,232,255,.8)); }
+.vr-toast { position: fixed; z-index: 65; left: 50%; top: calc(72px + env(safe-area-inset-top)); transform: translateX(-50%); width: min(340px, calc(100% - 24px)); padding: 10px 14px; text-align: center;
+  font-size: 12.5px; line-height: 1.45; color: var(--text); background: rgba(18,13,11,.88); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--holo); box-shadow: 0 0 24px rgba(95,232,255,.25); animation: cardUp .45s cubic-bezier(.2,.8,.2,1); }
+.vr-toast b { display: block; font-family: var(--caps); font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--holo); margin-bottom: 2px; }
+/* in VR keep the pamphlet short so the museum stays in view */
+body.vr-on .pamphlet { max-height: 48svh; }

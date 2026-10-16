@@ -15,8 +15,8 @@ npm run build      # static site written to /out
 | Action | Desktop | Phone |
 |---|---|---|
 | Walk | Scroll · W / S | Hold the gold ▲ / ▼ pad, or swipe up / down |
-| Look around | Move the mouse | Turn / tilt the phone (Tilt toggle, ◎ re-centres) · or swipe sideways |
-| Inspect an exhibit | Click it or its banner · Enter while aiming | Tap |
+| Look around | Move the mouse | VR tour: move the phone to look 360° (VR button toggles, ◎ re-centres) · or swipe sideways |
+| Inspect an exhibit | Click it or its banner · Enter while aiming | Tap · or in VR, hold your gaze on it ~1.5 s |
 | Next / previous exhibit | → / ← (or D / A) | Pamphlet buttons |
 | Floor guide | G or M | ☰ |
 | Close | Esc | ✕ |
@@ -32,7 +32,7 @@ npm run build      # static site written to /out
 | File | What |
 |---|---|
 | `components/museum/Loader.tsx` | Opening screen: crest + progress, then gilded doors swing open once the scene is ready |
-| `components/museum/MobileControls.tsx` | Phone controls: gyroscope look (asks permission on iPhone), hold-to-walk pad, swipe-to-look |
+| `components/museum/MobileControls.tsx` | Phone controls: VR tour (360° gyro view, gaze-to-open; iPhone asks permission), hold-to-walk pad, swipe-to-look |
 | `components/museum/Museum.tsx` | Page shell: entrance ticket, HUD, minimap, floor guide, keyboard, scroll length |
 | `components/museum/Scene.tsx` | Canvas, lighting, first-person walking camera |
 | `components/museum/Architecture.tsx` | Palace shell: inlaid marble floor, runner carpet, damask walls, gilt panels, columns, cornice, frescoed vault, sconces, arches |

@@ -5,24 +5,27 @@ import { LENGTH, pxPerUnit } from "@/lib/museum";
 import { museum, useMuseum } from "@/lib/store";
 
 /* Phone & tablet controls
-   - Gyro look: turn / tilt the phone to look around (iOS asks permission on a tap)
-   - Hold-to-walk pad: press ▲ / ▼ for a smooth, eased glide down the hall
-   - Swipe sideways on the scene to look around (fallback when gyro is off) */
+   - VR tour: the phone becomes a window into the museum — turn around, look up at the
+     chandeliers, look down at the floor (full 360°, driven by the gyroscope).
+     Hold your gaze on an exhibit to open it. iOS asks permission on a tap.
+   - Hold-to-walk pad: ▲ walks the way you're facing, with eased acceleration
+   - Swipe sideways to look around when VR is off */
 
 type DOE = typeof DeviceOrientationEvent & { requestPermission?: () => Promise<"granted" | "denied"> };
 
 const clamp = (v: number, a: number) => Math.max(-a, Math.min(a, v));
-const wrap = (d: number) => ((d + 540) % 360) - 180;
 
 export default function MobileControls({ hidden }: { hidden: boolean }) {
   const [touch, setTouch] = useState(false);
-  const [gyro, setGyro] = useState<"off" | "on" | "ask" | "unavailable">("off");
+  const [vr, setVr] = useState<"off" | "on" | "ask" | "unavailable">("off");
   const [prompt, setPrompt] = useState(false);
+  const [toast, setToast] = useState(false);
   const ready = useMuseum((s) => s.ready);
   const selected = useMuseum((s) => s.selected);
   const overlay = useMuseum((s) => s.guide || s.catalogue);
-  const base = useRef<{ a: number; b: number; g: number } | null>(null);
   const walk = useRef({ dir: 0, speed: 0, raf: 0, last: 0 });
+  const ring = useRef<SVGCircleElement>(null);
+  const gyro = vr; // kept for the swipe handler below
 
   /* ---------- detect a touch device ---------- */
   useEffect(() => {
@@ -30,62 +33,70 @@ export default function MobileControls({ hidden }: { hidden: boolean }) {
     setTouch(coarse);
     if (!coarse) return;
     const DO = window.DeviceOrientationEvent as DOE | undefined;
-    if (!DO) { setGyro("unavailable"); return; }
-    if (typeof DO.requestPermission === "function") setGyro("ask");   // iOS: needs a tap
-    else setGyro("on");                                                // Android: just works
+    if (!DO) { setVr("unavailable"); return; }
+    setVr(typeof DO.requestPermission === "function" ? "ask" : "off");
   }, []);
 
-  /* show the "turn on motion look" card once the doors have opened */
+  /* once the doors open: Android goes straight into VR, iPhone gets a card (it needs a tap for permission) */
   useEffect(() => {
-    if (!touch || !ready || gyro !== "ask") return;
+    if (!touch || !ready) return;
     let dismissed = false;
-    try { dismissed = sessionStorage.getItem("gyro-prompt") === "no"; } catch {}
-    if (!dismissed) { const t = setTimeout(() => setPrompt(true), 1800); return () => clearTimeout(t); }
-  }, [touch, ready, gyro]);
+    try { dismissed = sessionStorage.getItem("vr-prompt") === "no"; } catch {}
+    if (dismissed) return;
+    const t = setTimeout(() => {
+      if (vr === "ask") setPrompt(true);
+      else if (vr === "off") startVr(true);
+    }, 1600);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [touch, ready]);
 
-  /* ---------- gyroscope ---------- */
+  /* ---------- device orientation → VR camera ---------- */
   useEffect(() => {
-    if (gyro !== "on") return;
+    look.vr = vr === "on";
+    document.body.classList.toggle("vr-on", vr === "on");
+    if (vr !== "on") { look.orient.has = false; return; }
     let got = false;
     const onOrient = (e: DeviceOrientationEvent) => {
       if (e.alpha == null || e.beta == null || e.gamma == null) return;
       got = true;
       const angle = (screen.orientation?.angle ?? (window as unknown as { orientation?: number }).orientation ?? 0) as number;
-      if (!base.current) base.current = { a: e.alpha, b: e.beta, g: e.gamma };
-      const yaw = wrap(e.alpha - base.current.a);           // turning left increases alpha
-      let pitch: number;
-      if (angle === 90) pitch = -(e.gamma - base.current.g);
-      else if (angle === -90 || angle === 270) pitch = e.gamma - base.current.g;
-      else pitch = e.beta - base.current.b;                 // portrait: tilt top away = look up
+      look.orient.a = e.alpha; look.orient.b = e.beta; look.orient.g = e.gamma; look.orient.screen = angle;
+      if (!look.orient.has) { look.orient.has = true; look.recenter = true; }
       look.source = "gyro";
-      look.x = clamp(-yaw / 28, 2.2);
-      look.y = clamp(pitch / 26, 1.3);
     };
     addEventListener("deviceorientation", onOrient);
-    // no readings after a moment → this device has no gyro
-    const t = setTimeout(() => { if (!got) setGyro("unavailable"); }, 2500);
-    return () => { removeEventListener("deviceorientation", onOrient); clearTimeout(t); };
-  }, [gyro]);
+    const t = setTimeout(() => { if (!got) { setVr("unavailable"); setToast(false); } }, 2500); // no sensor
+    // gaze ring animation
+    let raf = 0;
+    const tick = () => {
+      if (ring.current) ring.current.style.strokeDashoffset = String(113 * (1 - look.gaze.p));
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => { removeEventListener("deviceorientation", onOrient); clearTimeout(t); cancelAnimationFrame(raf); look.vr = false; document.body.classList.remove("vr-on"); };
+  }, [vr]);
 
-  const enableGyro = useCallback(async () => {
+  const startVr = useCallback(async (auto = false) => {
     setPrompt(false);
-    const DO = window.DeviceOrientationEvent as DOE;
+    const DO = window.DeviceOrientationEvent as DOE | undefined;
+    if (!DO) { setVr("unavailable"); return; }
     try {
       const res = DO.requestPermission ? await DO.requestPermission() : "granted";
-      base.current = null;
-      setGyro(res === "granted" ? "on" : "unavailable");
-    } catch { setGyro("unavailable"); }
+      if (res !== "granted") { setVr("unavailable"); return; }
+      look.recenter = true;
+      setVr("on");
+      setToast(true); setTimeout(() => setToast(false), auto ? 4200 : 3200);
+      // immersive: go full-screen where the browser allows it (Android)
+      if (!auto) document.documentElement.requestFullscreen?.().catch(() => {});
+    } catch { setVr("unavailable"); }
   }, []);
 
-  const toggleGyro = () => {
-    if (gyro === "on") { setGyro("off"); look.x = 0; look.y = 0; return; }
-    if (gyro === "ask" || gyro === "off") {
-      const DO = window.DeviceOrientationEvent as DOE | undefined;
-      if (DO && typeof DO.requestPermission === "function") enableGyro();
-      else { base.current = null; setGyro("on"); }
-    }
+  const toggleVr = () => {
+    if (vr === "on") { setVr("off"); look.x = 0; look.y = 0; if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {}); return; }
+    startVr();
   };
-  const recenter = () => { base.current = null; look.x = 0; look.y = 0; };
+  const recenter = () => { look.recenter = true; navigator.vibrate?.(10); };
 
   /* ---------- sideways swipe to look (when gyro is off) ---------- */
   useEffect(() => {
@@ -113,7 +124,7 @@ export default function MobileControls({ hidden }: { hidden: boolean }) {
     const w = walk.current;
     const dt = Math.min(0.1, (t - (w.last || t)) / 1000);
     w.last = t;
-    const target = w.dir * 3.0; // metres per second
+    const target = w.dir * (look.vr ? look.facing : 1) * 3.0; // metres per second, in the direction you face
     w.speed += (target - w.speed) * (1 - Math.exp(-dt * (w.dir ? 3.5 : 6)));
     if (w.dir !== 0 || Math.abs(w.speed) > 0.01) {
       const maxY = LENGTH * pxPerUnit();
@@ -145,23 +156,29 @@ export default function MobileControls({ hidden }: { hidden: boolean }) {
           <svg viewBox="0 0 24 24"><path d="M12 19l-7-9h14z" /></svg>
         </button>
       </div>
-      {gyro !== "unavailable" && (
+      {vr !== "unavailable" && (
         <div className={`mgyro ${show ? "show" : ""}`}>
-          <button className={`mgyro-btn ${gyro === "on" ? "on" : ""}`} onClick={toggleGyro} aria-pressed={gyro === "on"} aria-label="Motion look" tabIndex={show ? 0 : -1}>
-            <svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2" /><path d="M3 9c-1 2-1 4 0 6M21 9c1 2 1 4 0 6" /></svg>
-            <span>{gyro === "on" ? "Tilt on" : "Tilt"}</span>
+          <button className={`mgyro-btn ${vr === "on" ? "on" : ""}`} onClick={toggleVr} aria-pressed={vr === "on"} aria-label="VR tour" tabIndex={show ? 0 : -1}>
+            <svg viewBox="0 0 24 24"><path d="M3 8.5C3 7.7 3.7 7 4.5 7h15c.8 0 1.5.7 1.5 1.5v6c0 .8-.7 1.5-1.5 1.5h-4l-2-2.5h-3L8.5 16h-4C3.7 16 3 15.3 3 14.5z" /><circle cx="8" cy="11" r="1.6" /><circle cx="16" cy="11" r="1.6" /></svg>
+            <span>{vr === "on" ? "VR on" : "VR tour"}</span>
           </button>
-          {gyro === "on" && <button className="mgyro-btn" onClick={recenter} aria-label="Re-centre view" tabIndex={show ? 0 : -1}><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M12 2v4M12 18v4M2 12h4M18 12h4" /></svg></button>}
+          {vr === "on" && <button className="mgyro-btn" onClick={recenter} aria-label="Re-centre view" tabIndex={show ? 0 : -1}><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M12 2v4M12 18v4M2 12h4M18 12h4" /></svg></button>}
         </div>
       )}
+      {vr === "on" && !overlay && (
+        <div className={`vr-reticle ${selected ? "dim" : ""}`} aria-hidden>
+          <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="3" className="dot" /><circle cx="20" cy="20" r="18" className="track" /><circle ref={ring} cx="20" cy="20" r="18" className="fill" /></svg>
+        </div>
+      )}
+      {toast && <div className="vr-toast" role="status"><b>VR tour on</b> Move your phone to look around · look at an exhibit to open it · hold ▲ to walk</div>}
       {prompt && (
-        <div className="gyro-card" role="dialog" aria-label="Motion look">
-          <div className="gyro-icon"><svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2" /><path d="M3 9c-1 2-1 4 0 6M21 9c1 2 1 4 0 6" /></svg></div>
-          <b>Look around by moving your phone</b>
-          <p>Turn and tilt your phone to look around the halls. Hold ▲ to walk.</p>
+        <div className="gyro-card" role="dialog" aria-label="VR tour">
+          <div className="gyro-icon"><svg viewBox="0 0 24 24"><path d="M3 8.5C3 7.7 3.7 7 4.5 7h15c.8 0 1.5.7 1.5 1.5v6c0 .8-.7 1.5-1.5 1.5h-4l-2-2.5h-3L8.5 16h-4C3.7 16 3 15.3 3 14.5z" /><circle cx="8" cy="11" r="1.6" /><circle cx="16" cy="11" r="1.6" /></svg></div>
+          <b>Take the VR tour</b>
+          <p>Your phone becomes a window into the museum — turn around, look up at the chandeliers. Look at an exhibit to open it, hold ▲ to walk.</p>
           <div className="actions">
-            <button className="btn btn-gold" onClick={enableGyro}>Turn on</button>
-            <button className="btn btn-line" onClick={() => { setPrompt(false); try { sessionStorage.setItem("gyro-prompt", "no"); } catch {} }}>Not now</button>
+            <button className="btn btn-gold" onClick={() => startVr()}>Start VR tour</button>
+            <button className="btn btn-line" onClick={() => { setPrompt(false); try { sessionStorage.setItem("vr-prompt", "no"); } catch {} }}>Not now</button>
           </div>
         </div>
       )}

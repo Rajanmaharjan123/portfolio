@@ -62,10 +62,10 @@ function Walker() {
       // look at the exhibit, nudged so the pamphlet doesn't cover it
       want.set(sideX * (aspect < 0.8 ? 0.85 : 1) - (aspect < 0.8 ? 0 : ex.side * 0.9), ex.wall ? 2.9 : (ex.art === "desk" ? 1.5 : 2.2), ex.z);
       if (ex.art === "desk") want.set(0, 1.6, END_Z - 8);
-      if (ex.art === "avatar") want.set(aspect < 0.8 ? 0 : -0.7, 2.3, ex.z);
+      if (ex.art === "avatar") want.set(aspect < 0.8 ? 0 : -0.8, 2.0, ex.z);
     } else if (pos.current > AVATAR_Z + 1.2) {
       // at the entrance, the visitor's eye is drawn to the host
-      want.set(look.x * 1.5, 2.15 + look.y * 0.8, AVATAR_Z);
+      want.set(look.x * 1.5 - (size.width / size.height > 1.3 ? 1.25 : 0), size.width / size.height < 0.8 ? 0.2 : 2.1 + look.y * 0.8, AVATAR_Z);
     } else {
       want.set(look.x * 3.2, 1.6 + look.y * 1.1, pos.current - 10);
     }

@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { AVATAR_Z, exhibits, halls, viewingZ, walkTo, type Exhibit as Ex } from "@/lib/museum";
 import { museum, useMuseum } from "@/lib/store";
 import Artifact from "./Artifacts";
-import Avatar from "./Avatar";
+import Portrait from "./Portrait";
 import { HALF_W } from "./Architecture";
 import { M, holo } from "./materials";
 
@@ -232,19 +232,26 @@ export default function Exhibit({ e, x, df = 4.2 }: { e: Ex; x: number; df?: num
   if (isAvatar) {
     return (
       <group position={[0, 0, e.z]}>
-        <Spotlight color={e.accent} on />
+        <Spotlight color={e.accent} on={selected || hovered} />
         <group onPointerOver={over} onPointerOut={out} onClick={click}>
-          <Avatar accent={e.accent} />
-          <mesh position={[0, 2.0, 0]} visible={false}><boxGeometry args={[1.8, 3.6, 1.2]} /></mesh>
+          <Portrait />
+          <mesh position={[0, 2.0, 0.2]} visible={false}><boxGeometry args={[1.9, 3.4, 0.6]} /></mesh>
         </group>
         {near && (
-          <Html transform position={[0, 3.75, 0]} distanceFactor={df} zIndexRange={[20, 0]}>
-            {label}
+          /* small brass plaque at the foot of the easel — never covers the portrait */
+          <Html transform position={[0, 0.78, 0.75]} rotation={[-0.25, 0, 0]} distanceFactor={df * 0.55} zIndexRange={[20, 0]}>
+            <div ref={banner} className={`plaque ${selected ? "on" : ""} ${hovered ? "hover" : ""}`} onClick={click}
+              onPointerEnter={() => museum.set({ hovered: e.id })} onPointerLeave={() => museum.set({ hovered: null })}>
+              <b>{e.title}</b>
+              <small>{e.subtitle} · Kathmandu</small>
+              <span>{selected ? "Viewing" : "Read about me"} ▸</span>
+            </div>
           </Html>
         )}
       </group>
     );
   }
+
   return (
     <group position={[e.side * x, 0, e.z]} rotation={[0, rot, 0]}>
       <Spotlight color={e.accent} on={selected || hovered} />

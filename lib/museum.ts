@@ -97,7 +97,7 @@ hall("arsenal", "III", "The Arsenal", `${techGroups.reduce((a, g) => a + g.items
 })));
 
 hall("works", "IV", "Gallery of Works", `${inventory.length} apps, SDKs & games`, inventory.map((p) => ({
-  title: p.name, subtitle: `${p.type} · ${p.rarity}`, art: p.icon, accent: rarityHolo[p.rarity], payload: { kind: "project", p },
+  title: p.name, subtitle: `${p.type} · ${p.category}`, art: p.icon, accent: rarityHolo[p.rarity], payload: { kind: "project", p },
 })));
 
 hall("chronicle", "V", "The Chronicle", "Portraits of a career", quests.map((q) => ({

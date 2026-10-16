@@ -12,7 +12,7 @@ function Body({ e }: { e: Exhibit }) {
       return (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <div className="pam-portrait"><img src="/avatar/avatar-color.png" alt={`Portrait of ${profile.name}`} /></div>
+          <div className="pam-portrait"><img src="/avatar/portrait.jpg" alt={`Portrait of ${profile.name}`} /></div>
           <p className="lede">{profile.headline}</p>
           <p>{profile.summary}</p>
           <dl className="facts">
@@ -52,8 +52,8 @@ function Body({ e }: { e: Exhibit }) {
       return (
         <>
           <div className="pill-row">
-            <span className={`rarity r-${p.p.rarity}`}>◆ {p.p.rarity}</span>
             <span className="pill">{p.p.category}</span>
+            <span className="pill">{p.p.type}</span>
           </div>
           <p className="lede">{p.p.blurb}</p>
           {p.p.result && <p className="result">▲ {p.p.result}</p>}

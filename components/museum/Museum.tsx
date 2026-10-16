@@ -2,7 +2,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { exhibits, halls, LENGTH, PX_PER_UNIT, START_Z, travel, viewingZ, walkTo, zToProgress } from "@/lib/museum";
-import { profile } from "@/lib/data";
+import { impact, profile, quests } from "@/lib/data";
 import { museum, useMuseum } from "@/lib/store";
 import Pamphlet, { go } from "./Pamphlet";
 import Catalogue from "./Catalogue";
@@ -106,15 +106,59 @@ export default function Museum() {
         <div className="ticket-card">
           <span className="ticket-kicker">Admit one · The Maharjan Collection</span>
           <h1>{profile.name}</h1>
-          <p className="ticket-role">{profile.role}</p>
-          <p className="ticket-sub">AR · LiDAR · 3D · Real-time · Flutter</p>
+          <p className="ticket-role">{profile.role} · 5+ years</p>
+          <p className="ticket-status"><i /> Available for freelance &amp; full-time · {profile.location} ({profile.timezone}) · remote-friendly</p>
           <div className="rule"><i /></div>
           <p className="ticket-copy">{profile.headline}</p>
+
+          <div className="ticket-scroll">
+            <p className="ticket-summary">{profile.summary}</p>
+
+            <dl className="ticket-stats">
+              {impact.map((s) => <div key={s.label}><dd>{s.value}</dd><dt>{s.label}</dt></div>)}
+            </dl>
+
+            <h3 className="ticket-h">Currently</h3>
+            <ul className="ticket-now">
+              {quests.filter((q) => q.status === "ACTIVE").map((q) => (
+                <li key={q.id}><b>{q.title}</b><span>@ {q.company} · {q.period}</span></li>
+              ))}
+            </ul>
+
+            <h3 className="ticket-h">Highlights</h3>
+            <ul className="ticket-list">
+              <li>Rebuilt Sajilo&apos;s rider &amp; driver ride-sharing apps single-handedly — rider rating <b>2.8★ → 3.7★</b>, driver <b>2.2★ → 2.8★</b>.</li>
+              <li>Shipped identity &amp; banking SDKs (IDEMIA, KIBB) as XCFrameworks for Malaysian fintechs.</li>
+              <li>Built LiDAR &amp; RealityKit apps: floor plans with evacuation routes, measured 3D rooms, on-device object capture.</li>
+              <li>Real-time systems: MQTT + Protobuf chat, live map tracking, eSewa / Khalti / Prabhu Pay payments.</li>
+            </ul>
+
+            <h3 className="ticket-h">Core stack</h3>
+            <div className="ticket-chips">
+              {["Swift", "SwiftUI", "UIKit", "Combine", "ARKit", "RealityKit", "RoomPlan · LiDAR", "MapKit", "Core Location", "MQTT", "XCFramework", "Flutter"].map((t) => <span key={t}>{t}</span>)}
+            </div>
+
+            <h3 className="ticket-h">Background</h3>
+            <p className="ticket-bg">B.E. Electronics &amp; Communication (NCIT, 2015–19) · robotics roots — helped build a bomb-disposal robot for the army, drones and UAV/UGV projects · speaks Nepali, Newari, English &amp; Hindi.</p>
+
+            <h3 className="ticket-h">Inside the museum</h3>
+            <ol className="ticket-map">
+              {halls.map((h) => (
+                <li key={h.id}><button onClick={() => { museum.set({ selected: null }); walkTo(h.z - 3); }}><span>{h.numeral}</span>{h.name}<small>{h.tagline}</small></button></li>
+              ))}
+            </ol>
+          </div>
+
           <div className="actions">
             <button className="btn btn-gold" onClick={() => walkTo(halls[0].z - 4)}>Begin the tour</button>
             <button className="btn btn-line" onClick={() => museum.set({ catalogue: true })}>Read the catalogue</button>
           </div>
-          <p className="ticket-hint">{touch ? "Swipe up to walk · tap an exhibit" : "Scroll or W / S to walk · move mouse to look · click an exhibit"}</p>
+          <div className="ticket-links">
+            <a href={`mailto:${profile.email}?subject=Project%20enquiry`}>{profile.email}</a>
+            <a href={profile.linkedin} target="_blank" rel="noreferrer">LinkedIn ↗</a>
+            <a href={profile.cv} download>Download CV</a>
+          </div>
+          <p className="ticket-hint">{touch ? "Swipe up outside this card to walk · tap an exhibit" : "Scroll or W / S to walk · move mouse to look · click an exhibit"}</p>
         </div>
       </section>
 

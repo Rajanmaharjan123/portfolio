@@ -200,7 +200,7 @@ function Arch({ z, numeral, name, tagline }: { z: number; numeral: string; name:
       <mesh position={[0, 7.8, 0.12]} material={M.gold}><boxGeometry args={[0.55, 0.7, 0.7]} /></mesh>
       <mesh position={[0, 7.8, 0.48]} material={M.marble}><circleGeometry args={[0.18, 24]} /></mesh>
       {near && (
-        <Html transform position={[0, 5.15, 0.4]} distanceFactor={5} zIndexRange={[5, 0]} pointerEvents="none">
+        <Html transform position={[0, 3.35, 0.4]} distanceFactor={4.4} zIndexRange={[5, 0]} pointerEvents="none">
           <div className="sign" ref={ref}>
             <span className="sign-num">Gallery {numeral}</span>
             <b>{name}</b>

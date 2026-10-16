@@ -25,7 +25,7 @@ npm run build      # static site written to /out
 - All text lives in `lib/data.ts` (profile, services, tech, projects, experience, trophies).
 - `lib/museum.ts` turns that data into galleries and exhibit positions — add an item to data.ts and it appears in the right gallery automatically.
 - Replace `public/Rajan-Maharjan-CV.pdf` to update the CV download.
-- Avatar: `public/avatar/avatar-color.png` (cut-out photo) and `avatar-depth.png` (greyscale height map, white = closest). Swap both to change the avatar.
+- Entrance portrait: replace `public/avatar/portrait.jpg` (3:4 ratio, e.g. 720×960).
 - Gallery light colours: `LIGHT` in `lib/museum.ts`.
 
 ## Files
@@ -35,7 +35,7 @@ npm run build      # static site written to /out
 | `components/museum/Scene.tsx` | Canvas, lighting, first-person walking camera |
 | `components/museum/Architecture.tsx` | Palace shell: inlaid marble floor, runner carpet, damask walls, gilt panels, columns, cornice, frescoed vault, sconces, arches |
 | `components/museum/Chandeliers.tsx` | Crystal chandeliers (jhoomers) + the pool of lights that follows the visitor, tinted per gallery |
-| `components/museum/Avatar.tsx` | Rajan's 3D avatar — the photo in `public/avatar/` sculpted into a relief that turns to face visitors |
+| `components/museum/Portrait.tsx` | Rajan's framed portrait on an easel at the entrance (`public/avatar/portrait.jpg`) |
 | `components/museum/Exhibit.tsx` | Pedestals, vitrines, wall portraits, guestbook desk, floating banners |
 | `components/museum/Artifacts.tsx` | The procedural "antiques" (gold, marble, holograms) |
 | `components/museum/Pamphlet.tsx` | Side panel with exhibit details |

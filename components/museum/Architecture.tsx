@@ -60,7 +60,6 @@ function Columns() {
 export const sconces: [number, number, number][] = [];
 for (let i = 0; i < columnZs.length - 1; i++) {
   const z = (columnZs[i] + columnZs[i + 1]) / 2;
-  if (inChronicle(z)) continue; // portraits hang there; they have picture lights instead
   for (const s of [-1, 1]) sconces.push([s * (HALF_W - 0.05), 3.4, z]);
 }
 
@@ -107,7 +106,6 @@ function Panels() {
     const h: Xf[] = [], v: Xf[] = [];
     for (let i = 0; i < columnZs.length - 1; i++) {
       const z = (columnZs[i] + columnZs[i + 1]) / 2;
-      if (inChronicle(z)) continue;
       for (const s of [-1, 1]) {
         const x = s * (HALF_W - 0.03);
         const w = COL_STEP - 1.6;

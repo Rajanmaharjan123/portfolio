@@ -71,9 +71,9 @@ function Walker() {
     const sel = museum.get().selected;
     const ex = sel ? exhibits.find((e) => e.id === sel) : null;
     if (ex) {
-      const sideX = ex.wall ? ex.side * (HALF_W - 0.1) : ex.side * (narrow ? 2.1 : 2.75);
+      const sideX = ex.side * (narrow ? 2.1 : 2.75);
       // look at the exhibit, nudged so the pamphlet doesn't cover it
-      want.set(sideX * (narrow ? 0.85 : 1) - (narrow ? 0 : ex.side * 0.9), ex.wall ? 2.4 : (ex.art === "desk" ? 1.5 : 1.9), ex.z);
+      want.set(sideX * (narrow ? 0.85 : 1) - (narrow ? 0 : ex.side * 0.9), ex.wall ? 2.3 : (ex.art === "desk" ? 1.5 : 1.9), ex.z);
       if (ex.art === "desk") want.set(0, 1.6, END_Z - 8);
       if (ex.art === "avatar") want.set(PORTRAIT_X + (narrow ? 0 : 0.9), narrow ? 1.2 : 2.1, ex.z);
     } else if (pos.current > AVATAR_Z + 1.2) {
@@ -109,7 +109,7 @@ function deviceQuat(out: THREE.Quaternion) {
 function gazePoints(e: (typeof exhibits)[number], x: number): [number, number, number][] {
   if (e.art === "avatar") return [[PORTRAIT_X, 2.3, AVATAR_Z]];
   if (e.art === "desk") return [[0, 1.8, e.z]];
-  if (e.wall) return [[e.side * (HALF_W - 0.1), 2.5, e.z]];
+  if (e.wall) return [[e.side * x, 2.5, e.z]];
   if (e.payload.kind === "tech") return [[e.side * x, 1.8, e.z]];
   return [[e.side * x, 1.8, e.z], [e.side * (x + (x < 2.5 ? 1.15 : 1.48)), 1.85, e.z + (x < 2.5 ? 0.7 : 0.91)]];
 }
@@ -153,7 +153,8 @@ function vrLook(camera: THREE.Camera, dt: number, x: number) {
     awayT = _fwd.angleTo(_to) > 1.0 ? awayT + dt : 0;
     if (awayT > 1.6) { museum.set({ selected: null }); awayT = 0; }
   } else awayT = 0;
-  if (best && best !== sel && best !== lastOpened) {
+  if (look.walking) { dwellId = null; dwellT = 0; look.gaze.p = 0; }
+  else if (best && best !== sel && best !== lastOpened) {
     if (best !== dwellId) { dwellId = best; dwellT = 0; }
     dwellT += dt;
     look.gaze.id = best; look.gaze.p = Math.min(1, dwellT / 1.4);

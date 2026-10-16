@@ -125,34 +125,53 @@ export default function MobileControls({ hidden }: { hidden: boolean }) {
     const dt = Math.min(0.1, (t - (w.last || t)) / 1000);
     w.last = t;
     const target = w.dir * (look.vr ? look.facing : 1) * 3.0; // metres per second, in the direction you face
-    w.speed += (target - w.speed) * (1 - Math.exp(-dt * (w.dir ? 3.5 : 6)));
+    w.speed += (target - w.speed) * (1 - Math.exp(-dt * (w.dir ? 3.5 : 10)));
     if (w.dir !== 0 || Math.abs(w.speed) > 0.01) {
       const maxY = LENGTH * pxPerUnit();
       scrollTo({ top: Math.max(0, Math.min(maxY, scrollY + w.speed * dt * pxPerUnit())), behavior: "instant" as ScrollBehavior });
       w.raf = requestAnimationFrame(loop);
     } else { w.speed = 0; w.raf = 0; w.last = 0; }
   }, []);
+  /* Walk ONLY while a finger is on ▲ / ▼. Every way a touch can end stops the walk:
+     finger lifted anywhere, touch cancelled, capture lost, app backgrounded, pad hidden. */
   const press = (dir: number) => (e: React.PointerEvent) => {
     e.preventDefault();
-    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
-    museum.set({ selected: null });
+    try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); } catch {}
     walk.current.dir = dir;
+    look.walking = true;
+    museum.set({ selected: null });
     if (!walk.current.raf) { walk.current.last = 0; walk.current.raf = requestAnimationFrame(loop); }
     navigator.vibrate?.(8);
   };
-  const release = () => { walk.current.dir = 0; };
+  const release = useCallback(() => { walk.current.dir = 0; look.walking = false; }, []);
+  useEffect(() => {
+    const stop = () => release();
+    const vis = () => { if (document.hidden) release(); };
+    addEventListener("pointerup", stop);
+    addEventListener("pointercancel", stop);
+    addEventListener("touchend", stop, { passive: true });
+    addEventListener("touchcancel", stop, { passive: true });
+    addEventListener("blur", stop);
+    document.addEventListener("visibilitychange", vis);
+    return () => {
+      removeEventListener("pointerup", stop); removeEventListener("pointercancel", stop);
+      removeEventListener("touchend", stop); removeEventListener("touchcancel", stop);
+      removeEventListener("blur", stop); document.removeEventListener("visibilitychange", vis);
+    };
+  }, [release]);
   useEffect(() => () => cancelAnimationFrame(walk.current.raf), []);
 
   if (!touch) return null;
   const show = !hidden && !selected && !overlay;
+  if (!show && walk.current.dir !== 0) { walk.current.dir = 0; look.walking = false; }
 
   return (
     <>
       <div className={`mpad ${show ? "show" : ""}`} aria-hidden={!show}>
-        <button className="mpad-btn" onPointerDown={press(1)} onPointerUp={release} onPointerCancel={release} onPointerLeave={release} aria-label="Walk forward" tabIndex={show ? 0 : -1}>
+        <button className="mpad-btn" onPointerDown={press(1)} onPointerUp={release} onPointerCancel={release} onLostPointerCapture={release} onContextMenu={(e) => e.preventDefault()} aria-label="Walk forward" tabIndex={show ? 0 : -1}>
           <svg viewBox="0 0 24 24"><path d="M12 5l7 9H5z" /></svg>
         </button>
-        <button className="mpad-btn sm" onPointerDown={press(-1)} onPointerUp={release} onPointerCancel={release} onPointerLeave={release} aria-label="Walk back" tabIndex={show ? 0 : -1}>
+        <button className="mpad-btn sm" onPointerDown={press(-1)} onPointerUp={release} onPointerCancel={release} onLostPointerCapture={release} onContextMenu={(e) => e.preventDefault()} aria-label="Walk back" tabIndex={show ? 0 : -1}>
           <svg viewBox="0 0 24 24"><path d="M12 19l-7-9h14z" /></svg>
         </button>
       </div>

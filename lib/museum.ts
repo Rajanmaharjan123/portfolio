@@ -53,7 +53,7 @@ export const exhibits: Exhibit[] = [];
 
 /* Each gallery has its own chandelier light colour */
 const LIGHT: Record<string, string> = {
-  foyer: "#ffd9a0", craft: "#ffc483", arsenal: "#d6e6ff", works: "#ffe4bc", chronicle: "#ffad66", trophies: "#ffc9b0", guestbook: "#ffd9a0",
+  foyer: "#ffd9a0", craft: "#ffc483", arsenal: "#d6e6ff", works: "#ffe4bc", chronicle: "#ffe2bc", trophies: "#ffc9b0", guestbook: "#ffd9a0",
 };
 
 /* The visitor's host: Rajan's 3D avatar greets them in the entrance vestibule */
@@ -98,7 +98,7 @@ hall("works", "III", "Gallery of Works", `${inventory.length} apps, SDKs & games
 })));
 
 hall("chronicle", "IV", "The Chronicle", "Portraits of a career", quests.map((q) => ({
-  title: q.company, subtitle: q.period, art: "frame" as ArtKind, accent: q.status === "ACTIVE" ? holo.lime : holo.amber, payload: { kind: "job", q },
+  title: q.company, subtitle: q.period, art: "frame" as ArtKind, accent: holo.amber, payload: { kind: "job", q },
 })), true);
 
 hall("trophies", "V", "Trophy Room", "Honours & milestones", achievements.map((t) => ({
@@ -143,7 +143,7 @@ export function walkTo(zz: number, smooth = true) {
 export function viewingZ(e: Exhibit) {
   if (e.art === "desk") return END_Z;
   if (e.art === "avatar") return e.z + 4.3;
-  return e.z + (e.wall ? 3.2 : 3.4);
+  return e.z + (e.wall ? 3.8 : 3.4);
 }
 /* light colour of the gallery containing z */
 export const ENTRANCE = { id: "entrance", name: "Entrance", tagline: "Meet the developer" };

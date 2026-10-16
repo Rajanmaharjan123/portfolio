@@ -217,6 +217,7 @@ export const M = {
   velvet: new THREE.MeshStandardMaterial({ color: "#7a1820", roughness: 0.95 }),
   ink: new THREE.MeshStandardMaterial({ color: "#14100d", roughness: 0.6 }),
   canvasDark: new THREE.MeshStandardMaterial({ color: "#1d1712", roughness: 0.75 }),
+  parchment: new THREE.MeshStandardMaterial({ color: "#f3e7cc", roughness: 0.85, emissive: "#f3e7cc", emissiveIntensity: 0.35 }),
   glass: new THREE.MeshPhysicalMaterial({ color: "#eaf4ff", metalness: 0, roughness: 0.04, transparent: true, opacity: 0.16, clearcoat: 1, depthWrite: false, side: THREE.DoubleSide }),
   crystal: new THREE.MeshPhysicalMaterial({ color: "#fff8ec", metalness: 0.1, roughness: 0.02, emissive: "#ffe8c0", emissiveIntensity: 0.55, clearcoat: 1, transparent: true, opacity: 0.9 }),
   flame: new THREE.MeshBasicMaterial({ color: "#ffe2a8", toneMapped: false }),

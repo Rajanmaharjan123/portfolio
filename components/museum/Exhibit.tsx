@@ -110,15 +110,14 @@ function OrnateFrame({ glow }: { glow: string }) {
       {/* crest */}
       <mesh position={[0, H / 2 + b + 0.12, 0.12]} scale={[1.6, 1, 0.5]} material={M.gold}><sphereGeometry args={[0.16, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2]} /></mesh>
       {/* painted canvas */}
-      <mesh position={[0, 0, 0.08]} material={M.canvasDark}><planeGeometry args={[W, H]} /></mesh>
-      <mesh position={[0, 0, 0.085]} material={holo(glow, 0.1)}><planeGeometry args={[W, H]} /></mesh>
+      <mesh position={[0, 0, 0.08]} material={M.parchment}><planeGeometry args={[W, H]} /></mesh>
       {/* picture light */}
       <group position={[0, H / 2 + b + 0.42, 0.42]}>
         <mesh rotation={[0, 0, Math.PI / 2]} material={M.brass}><cylinderGeometry args={[0.06, 0.06, 1.3, 16]} /></mesh>
         <mesh position={[0, -0.05, 0.02]} material={M.flame}><boxGeometry args={[1.2, 0.015, 0.05]} /></mesh>
         {[-0.45, 0.45].map((x) => <mesh key={x} position={[x, -0.15, -0.2]} rotation={[0.9, 0, 0]} material={M.brass}><cylinderGeometry args={[0.015, 0.015, 0.5, 8]} /></mesh>)}
       </group>
-      <mesh position={[0, 0.3, 0.09]} material={holo("#ffd59a", 0.12)}><planeGeometry args={[W, H * 0.8]} /></mesh>
+      <mesh position={[0, 0.3, 0.09]} material={holo(glow, 0.06)}><planeGeometry args={[W, H * 0.8]} /></mesh>
     </group>
   );
 }
@@ -159,12 +158,14 @@ export default function Exhibit({ e, x, df = 4.2 }: { e: Ex; x: number; df?: num
   useFrame(() => {
     const d = camera.position.z - e.z; // >0 when exhibit is ahead
     // other banners wait until the visitor has stepped past the avatar
-    const n = d > 0.3 && d < 34 && (e.art === "avatar" || camera.position.z < AVATAR_Z + 0.3);
+    const n = d > 0.3 && d < 38 && (e.art === "avatar" || camera.position.z < AVATAR_Z + 0.3);
     if (n !== near) setNear(n);
     if (banner.current) {
       // fade out banners you're walking right past, so they never fill the screen
       const sel = museum.get().selected === e.id;
-      const o = sel ? 1 : Math.max(0, Math.min(1, (32 - d) / 10, (d - 1.8) / 2.2));
+      // portrait panels stand close together, so their writing only appears as you approach
+      const far = e.wall ? (21 - d) / 6 : (34 - d) / 12;
+      const o = sel ? 1 : Math.max(0, Math.min(1, far, (d - 1.8) / 2.4));
       banner.current.style.opacity = String(o);
       banner.current.style.pointerEvents = o > 0.3 ? "auto" : "none";
     }
@@ -186,21 +187,31 @@ export default function Exhibit({ e, x, df = 4.2 }: { e: Ex; x: number; df?: num
   );
 
   /* Portraits hung on the wall (experience) */
+  /* The Chronicle: free-standing gilded portrait panels, angled toward the visitor like the
+     other exhibits (no longer flat on the wall behind the columns) */
   if (e.wall) {
-    const wx = e.side * (HALF_W - 0.05);
+    const current = e.payload.kind === "job" && e.payload.q.status === "ACTIVE";
     return (
-      <group position={[wx, 0, e.z]} rotation={[0, -e.side * Math.PI / 2, 0]}>
+      <group position={[e.side * x, 0, e.z]} rotation={[0, -e.side * 0.55, 0]}>
+        <Spotlight color="#ffe6b8" on={selected || hovered} />
         <group onPointerOver={over} onPointerOut={out} onClick={click}>
-          <OrnateFrame glow={selected || hovered ? e.accent : "#ffd59a"} />
+          {/* marble plinth + brass easel posts */}
+          <mesh position={[0, 0.1, 0]} material={M.marbleDark}><boxGeometry args={[1.9, 0.2, 0.7]} /></mesh>
+          <mesh position={[0, 0.22, 0]} material={M.gold}><boxGeometry args={[1.8, 0.04, 0.6]} /></mesh>
+          {[-0.75, 0.75].map((px) => (
+            <mesh key={px} position={[px, 0.62, -0.02]} material={M.brass}><cylinderGeometry args={[0.04, 0.05, 0.8, 12]} /></mesh>
+          ))}
+          <OrnateFrame glow="#fff1d6" />
         </group>
         {near && (
-          <Html transform position={[0, 2.5, 0.2]} distanceFactor={df} zIndexRange={[20, 0]}>
-            <div ref={banner} className={`portrait ${selected ? "on" : ""}`} style={{ ["--accent" as string]: e.accent }} onClick={click}>
-              <span className="banner-no">No. {String(e.no).padStart(2, "0")} · {e.payload.kind === "job" && e.payload.q.status === "ACTIVE" ? "Current" : "Archive"}</span>
+          <Html transform position={[0, 2.5, 0.2]} distanceFactor={df * 0.72} zIndexRange={[20, 0]}>
+            <div ref={banner} className={`portrait ${selected ? "on" : ""} ${hovered ? "hover" : ""}`} onClick={click}
+              onPointerEnter={() => museum.set({ hovered: e.id })} onPointerLeave={() => museum.set({ hovered: null })}>
+              <span className={`portrait-tag ${current ? "now" : ""}`}>{current ? "● Current role" : "Archive"} · No. {String(e.no).padStart(2, "0")}</span>
               <b>{e.title}</b>
               <i>{e.payload.kind === "job" ? e.payload.q.title : ""}</i>
               <small>{e.subtitle}</small>
-              {skills.length > 0 && <div className="banner-skills">{skills.map((t) => <span key={t}>{t}</span>)}</div>}
+              {skills.length > 0 && <div className="portrait-skills">{skills.map((t) => <span key={t}>{t}</span>)}</div>}
               <span className="banner-cta">Read the story ▸</span>
             </div>
           </Html>

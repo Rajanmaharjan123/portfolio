@@ -109,16 +109,28 @@ function LightPool() {
   const { camera } = useThree();
   const lights = useRef<(THREE.PointLight | null)[]>([]);
   const col = useMemo(() => new THREE.Color(), []);
-  useFrame(() => {
-    const cz = camera.position.z;
-    const near = [...chandelierZs].sort((a, b) => Math.abs(a - (cz - 5)) - Math.abs(b - (cz - 5))).slice(0, 3);
-    near.forEach((z, i) => {
+  useFrame((_, dt) => {
+    const cz = camera.position.z - 5;
+    // Each light owns every 3rd chandelier, so a light only ever hops between chandeliers
+    // that are ~30 m apart — out of sight — and the lighting never visibly "pops".
+    for (let i = 0; i < 3; i++) {
       const l = lights.current[i];
-      if (!l) return;
-      l.position.set(0, Y - 0.2, z);
-      col.set(lightAt(z));
-      l.color.lerp(col, 0.08);
-    });
+      if (!l) continue;
+      let best = chandelierZs[i] ?? 0, bd = Infinity;
+      for (let k = i; k < chandelierZs.length; k += 3) {
+        const d = Math.abs(chandelierZs[k] - cz);
+        if (d < bd) { bd = d; best = chandelierZs[k]; }
+      }
+      if (Math.abs(l.position.z - best) > 0.01) {
+        // fade out, move, fade back in
+        l.intensity = Math.max(0, l.intensity - dt * 90);
+        if (l.intensity <= 0.5) l.position.set(0, Y - 0.2, best);
+      } else {
+        l.intensity += (30 - l.intensity) * Math.min(1, dt * 3);
+      }
+      col.set(lightAt(best));
+      l.color.lerp(col, Math.min(1, dt * 2));
+    }
   });
   return (
     <>

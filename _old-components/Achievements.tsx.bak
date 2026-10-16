@@ -1,0 +1,29 @@
+import Reveal from "./Reveal";
+import SectionHead from "./Section";
+import { TrophyIcon } from "./Icons";
+import { achievements } from "@/lib/data";
+
+export default function Achievements() {
+  return (
+    <section className="section" id="trophies">
+      <div className="container">
+        <SectionHead
+          index="05" kicker="Achievements" title="Trophy" accent="Case"
+          note={`${achievements.length}/${achievements.length} unlocked — robotics roots, an engineering degree and shipped results.`}
+        />
+        <div className="ach">
+          {achievements.map((a, i) => (
+            <Reveal key={a.title} className="panel trophy" delay={(i % 3) * 70}>
+              <div className="trophy-icon"><TrophyIcon /></div>
+              <div>
+                <span className="yr">{a.year}</span>
+                <b>{a.title}</b>
+                <small>{a.detail}</small>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

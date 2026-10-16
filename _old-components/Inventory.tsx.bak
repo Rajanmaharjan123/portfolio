@@ -1,0 +1,57 @@
+"use client";
+import { useState, type PointerEvent } from "react";
+import Reveal from "./Reveal";
+import { ItemIcon } from "./Icons";
+import { inventory } from "@/lib/data";
+
+const FILTERS = ["ALL", "LEGENDARY", "EPIC", "RARE"] as const;
+
+function tilt(e: PointerEvent<HTMLElement>) {
+  const el = e.currentTarget;
+  const r = el.getBoundingClientRect();
+  const px = (e.clientX - r.left) / r.width;
+  const py = (e.clientY - r.top) / r.height;
+  el.style.transform = `rotateX(${(0.5 - py) * 12}deg) rotateY(${(px - 0.5) * 14}deg) translateZ(0)`;
+  el.style.setProperty("--gx", `${px * 100}%`);
+  el.style.setProperty("--gy", `${py * 100}%`);
+}
+function reset(e: PointerEvent<HTMLElement>) { e.currentTarget.style.transform = ""; }
+
+export default function Inventory() {
+  const [f, setF] = useState<(typeof FILTERS)[number]>("ALL");
+  const items = inventory.filter((i) => f === "ALL" || i.rarity === f);
+  return (
+    <section className="section" id="inventory">
+      <div className="container">
+        <Reveal className="section-head">
+          <div>
+            <div className="section-kicker">// 03 · Projects</div>
+            <h2 className="section-title">Inven<span>tory</span></h2>
+          </div>
+          <div className="inv-filters" role="group" aria-label="Filter by rarity">
+            {FILTERS.map((x) => (
+              <button key={x} className={f === x ? "on" : ""} onClick={() => setF(x)}>{x}</button>
+            ))}
+          </div>
+        </Reveal>
+        <div className="inv">
+          {items.map((it, i) => (
+            <Reveal key={it.name} delay={(i % 3) * 80}>
+              <article className={`item ${it.rarity}`} onPointerMove={tilt} onPointerLeave={reset}>
+                <div className="item-glare" />
+                <div className="item-top">
+                  <div className="item-icon"><ItemIcon name={it.icon} /></div>
+                  <span className="item-rarity">◆ {it.rarity}</span>
+                </div>
+                <h3>{it.name}</h3>
+                <div className="item-type">{it.type}</div>
+                <p>{it.blurb}</p>
+                <div className="item-stack">{it.stack.map((s) => <span key={s}>{s}</span>)}</div>
+              </article>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

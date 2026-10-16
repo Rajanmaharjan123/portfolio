@@ -1,0 +1,17 @@
+import type { ReactNode } from "react";
+import Reveal from "./Reveal";
+
+export default function SectionHead({ index, kicker, title, accent, note, children }: {
+  index: string; kicker: string; title: string; accent: string; note?: ReactNode; children?: ReactNode;
+}) {
+  return (
+    <Reveal className="section-head">
+      <div>
+        <div className="section-kicker"><span>{index}</span> {kicker}</div>
+        <h2 className="section-title">{title} <span>{accent}</span></h2>
+        {note && <p className="section-note">{note}</p>}
+      </div>
+      {children}
+    </Reveal>
+  );
+}

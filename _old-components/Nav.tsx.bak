@@ -1,0 +1,95 @@
+"use client";
+import { useEffect, useState } from "react";
+import { profile } from "@/lib/data";
+
+const LINKS = [
+  { id: "services", label: "Services", k: "1" },
+  { id: "arsenal", label: "Tech", k: "2" },
+  { id: "work", label: "Work", k: "3" },
+  { id: "experience", label: "Experience", k: "4" },
+  { id: "trophies", label: "Trophies", k: "5" },
+  { id: "contact", label: "Contact", k: "6" },
+];
+
+export default function Nav() {
+  const [active, setActive] = useState("");
+  const [xp, setXp] = useState(0);
+  const [solid, setSolid] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const h = document.documentElement;
+      setXp((h.scrollTop / (h.scrollHeight - h.clientHeight || 1)) * 100);
+      setSolid(h.scrollTop > 40);
+    };
+    const io = new IntersectionObserver(
+      (es) => es.forEach((e) => e.isIntersecting && setActive(e.target.id)),
+      { rootMargin: "-45% 0px -50% 0px" }
+    );
+    LINKS.forEach((l) => { const el = document.getElementById(l.id); if (el) io.observe(el); });
+    const keys = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+      if (e.metaKey || e.ctrlKey || e.altKey || (e.target as HTMLElement).closest("input, textarea")) return;
+      const l = LINKS.find((x) => x.k === e.key);
+      if (l) document.getElementById(l.id)?.scrollIntoView({ behavior: "smooth" });
+    };
+    addEventListener("scroll", onScroll, { passive: true });
+    addEventListener("keydown", keys);
+    onScroll();
+    return () => { io.disconnect(); removeEventListener("scroll", onScroll); removeEventListener("keydown", keys); };
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+  }, [open]);
+
+  return (
+    <header className={`nav ${solid || open ? "solid" : ""}`}>
+      <div className="container nav-row">
+        <a href="#top" className="nav-id" aria-label="Rajan Maharjan — back to top" onClick={() => setOpen(false)}>
+          <span className="nav-avatar">R</span>
+          <span className="nav-name">
+            <b>{profile.name}</b>
+            <small>LVL {profile.level} · {profile.role}</small>
+          </span>
+        </a>
+
+        <nav className="nav-links" aria-label="Sections">
+          {LINKS.map((l) => (
+            <a key={l.id} href={`#${l.id}`} className={active === l.id ? "active" : ""}>
+              <span className="k">{l.k}</span>{l.label}
+            </a>
+          ))}
+        </nav>
+
+        <a className="btn btn-primary btn-sm nav-cta" href="#contact">Hire me</a>
+
+        <button
+          className={`burger ${open ? "x" : ""}`}
+          onClick={() => setOpen((o) => !o)}
+          aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
+          aria-controls="mobile-menu"
+        >
+          <i /><i /><i />
+        </button>
+      </div>
+      <div className="nav-xp" style={{ width: `${xp}%` }} />
+
+      <div id="mobile-menu" className={`sheet ${open ? "open" : ""}`} onClick={() => setOpen(false)} hidden={!open}>
+        <nav aria-label="Mobile">
+          {LINKS.map((l, i) => (
+            <a key={l.id} href={`#${l.id}`} style={{ transitionDelay: `${i * 40}ms` }} className={active === l.id ? "active" : ""}>
+              <span className="k">0{l.k}</span>{l.label}
+            </a>
+          ))}
+        </nav>
+        <div className="sheet-foot">
+          <a className="btn btn-primary" href={`mailto:${profile.email}`}>Email me</a>
+          <a className="btn btn-ghost" href={profile.cv} download>Download CV</a>
+        </div>
+      </div>
+    </header>
+  );
+}

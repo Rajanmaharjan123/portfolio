@@ -1,0 +1,53 @@
+import Reveal from "./Reveal";
+import { profile, skillTrees } from "@/lib/data";
+
+export default function Stats() {
+  return (
+    <section className="section" id="stats">
+      <div className="container">
+        <Reveal className="section-head">
+          <div>
+            <div className="section-kicker">// 01 · Character sheet</div>
+            <h2 className="section-title">Player <span>Stats</span></h2>
+          </div>
+          <p className="section-note">Skill trees unlocked across five years of shipping iOS, AR and cross-platform apps.</p>
+        </Reveal>
+        <div className="stats-grid">
+          <Reveal className="panel player">
+            <div className="player-portrait"><span className="mono-initials">RM</span></div>
+            <div className="player-name">{profile.name}</div>
+            <div className="player-class">Class · {profile.className}</div>
+            <div className="lvl">
+              <span className="lvl-badge"><b>{profile.level}</b></span>
+              <span className="dim">LEVEL {profile.level} · 5+ YRS XP<br />NEXT: VISIONOS</span>
+            </div>
+            <div className="player-rows">
+              <div><span className="dim">BASE</span><span>{profile.location}</span></div>
+              <div><span className="dim">MAIN</span><span>Swift / SwiftUI</span></div>
+              <div><span className="dim">OFF-HAND</span><span>Flutter</span></div>
+              <div><span className="dim">GUILD</span><span>Electronics & Comm. Eng.</span></div>
+              <div><span className="dim">LANGS</span><span>NE · NEW · EN · HI</span></div>
+              <div><span className="dim">AFK</span><span>Football · Travel · Games</span></div>
+            </div>
+          </Reveal>
+          <div className="trees">
+            {skillTrees.map((t, i) => (
+              <Reveal key={t.tree} className={`panel tree c-${t.color}`} delay={i * 90}>
+                <h3>{t.tree}<small>{t.skills.length} PERKS</small></h3>
+                {t.skills.map((s) => (
+                  <div className="skill" key={s.name}>
+                    <div className="skill-top">
+                      <span>{s.name}</span>
+                      <span className={`tag r-${s.tag}`}>{s.tag}</span>
+                    </div>
+                    <div className="skill-bar"><i style={{ ["--w" as string]: `${s.level}%` }} /></div>
+                  </div>
+                ))}
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

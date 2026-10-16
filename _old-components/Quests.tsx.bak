@@ -1,0 +1,52 @@
+"use client";
+import { useState } from "react";
+import Reveal from "./Reveal";
+import { quests } from "@/lib/data";
+
+export default function Quests() {
+  const [sel, setSel] = useState(0);
+  const q = quests[sel];
+  return (
+    <section className="section" id="quests">
+      <div className="container">
+        <Reveal className="section-head">
+          <div>
+            <div className="section-kicker">// 02 · Experience</div>
+            <h2 className="section-title">Quest <span>Log</span></h2>
+          </div>
+          <p className="section-note">Select a quest to read objectives and loot. Total XP earned: {quests.reduce((a, b) => a + b.xp, 0).toLocaleString()}.</p>
+        </Reveal>
+        <Reveal className="quests">
+          <div className="quest-list" role="tablist" aria-label="Experience">
+            {quests.map((x, i) => (
+              <button
+                key={x.id} role="tab" aria-selected={i === sel}
+                className={`quest-tab ${i === sel ? "active" : ""}`} onClick={() => setSel(i)}
+              >
+                <span className="quest-id">{x.id}</span>
+                <span><b>{x.company}</b><small>{x.period}</small></span>
+                <span className={`status ${x.status}`}>{x.status}</span>
+              </button>
+            ))}
+          </div>
+          <article className="panel quest-detail" key={q.id} role="tabpanel">
+            <div className="section-kicker">{q.id} · {q.status === "ACTIVE" ? "In progress" : "Completed"}</div>
+            <h3 style={{ marginTop: 10 }}>{q.title}</h3>
+            <div className="quest-meta">
+              <span className="co">@ {q.company}</span>
+              <span>{q.period}</span>
+              <span className="xp">+{q.xp.toLocaleString()} XP</span>
+            </div>
+            <ul className="objectives">
+              {q.objectives.map((o, i) => <li key={i} style={{ animationDelay: `${i * 70}ms` }}>{o}</li>)}
+            </ul>
+            <div className="loot">
+              <h4>LOOT DROPPED</h4>
+              <div className="chips">{q.loot.map((l) => <span className="chip" key={l}>{l}</span>)}</div>
+            </div>
+          </article>
+        </Reveal>
+      </div>
+    </section>
+  );
+}

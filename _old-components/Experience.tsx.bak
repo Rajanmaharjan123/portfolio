@@ -1,0 +1,68 @@
+"use client";
+import { useState } from "react";
+import Reveal from "./Reveal";
+import SectionHead from "./Section";
+import { quests, type Quest } from "@/lib/data";
+
+function Detail({ q }: { q: Quest }) {
+  return (
+    <>
+      <div className="section-kicker">{q.id} · {q.status === "ACTIVE" ? "In progress" : "Completed"}</div>
+      <h3>{q.title}</h3>
+      <div className="quest-meta">
+        <span className="co">@ {q.company}</span>
+        <span>{q.period}</span>
+      </div>
+      <ul className="objectives">
+        {q.objectives.map((o, i) => <li key={i} style={{ animationDelay: `${i * 60}ms` }}>{o}</li>)}
+      </ul>
+      <div className="loot">
+        <h4>Stack</h4>
+        <div className="tags">{q.stack.map((l) => <span key={l}>{l}</span>)}</div>
+      </div>
+      <div className="loot">
+        <h4>Loot dropped · apps shipped</h4>
+        <div className="chips">{q.loot.map((l) => <span className="chip" key={l}>{l}</span>)}</div>
+      </div>
+    </>
+  );
+}
+
+export default function Experience() {
+  const [sel, setSel] = useState(0);
+  const q = quests[sel];
+  return (
+    <section className="section" id="experience">
+      <div className="container">
+        <SectionHead
+          index="04" kicker="Experience" title="Quest" accent="Log"
+          note="Eight quests from robotics labs to senior iOS. Tap one to see objectives and loot."
+        />
+        <Reveal className="quests">
+          <div className="quest-list" role="tablist" aria-label="Experience">
+            {quests.map((x, i) => (
+              <div key={x.id} className="quest-item">
+                <button
+                  role="tab" aria-selected={i === sel} aria-controls={`q-${x.id}`}
+                  className={`quest-tab ${i === sel ? "active" : ""}`}
+                  onClick={() => setSel(i === sel && window.innerWidth < 960 ? -1 : i)}
+                >
+                  <span className="quest-dot" />
+                  <span className="quest-txt"><b>{x.company}</b><small>{x.title} · {x.period}</small></span>
+                  <span className={`status ${x.status}`}>{x.status === "ACTIVE" ? "NOW" : "DONE"}</span>
+                </button>
+                {/* Mobile: details open inline, accordion style */}
+                {i === sel && (
+                  <div className="panel quest-detail inline" id={`q-${x.id}`}><Detail q={x} /></div>
+                )}
+              </div>
+            ))}
+          </div>
+          {q && (
+            <article className="panel quest-detail side" key={q.id} role="tabpanel"><Detail q={q} /></article>
+          )}
+        </Reveal>
+      </div>
+    </section>
+  );
+}

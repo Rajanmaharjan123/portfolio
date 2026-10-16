@@ -1,0 +1,41 @@
+"use client";
+import dynamic from "next/dynamic";
+import { impact, marquee, profile } from "@/lib/data";
+import { ArrowIcon, DownloadIcon } from "./Icons";
+
+const HeroScene = dynamic(() => import("./HeroScene"), { ssr: false });
+
+export default function Hero() {
+  return (
+    <section className="hero" id="top">
+      <div className="hero-canvas" aria-hidden><HeroScene /></div>
+      <div className="hero-shade" />
+      <div className="container hero-content">
+        <span className="hero-tag">Available for projects · {profile.location}</span>
+        <h1 className="hero-name">
+          <span className="glitch" data-text="Rajan">Rajan</span>
+          <span className="l2">Maharjan</span>
+        </h1>
+        <p className="hero-role"><b>{profile.role}</b> · AR · LiDAR · 3D · Real-time</p>
+        <p className="hero-summary">{profile.headline} <span className="dim">{profile.summary}</span></p>
+        <div className="hero-actions">
+          <a className="btn btn-primary" href="#contact">Start a project <ArrowIcon /></a>
+          <a className="btn btn-ghost" href="#work">See my work</a>
+          <a className="btn btn-link" href={profile.cv} download><DownloadIcon /> CV</a>
+        </div>
+        <dl className="hero-stats">
+          {impact.map((s) => (
+            <div key={s.label}><dt>{s.label}</dt><dd>{s.value}</dd></div>
+          ))}
+        </dl>
+      </div>
+      <div className="marquee" aria-label="Technologies">
+        <div className="marquee-track">
+          {[...marquee, ...marquee].map((t, i) => (
+            <span key={i} aria-hidden={i >= marquee.length}>{t}</span>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

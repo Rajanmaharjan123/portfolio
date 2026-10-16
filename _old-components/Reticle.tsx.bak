@@ -1,0 +1,33 @@
+"use client";
+import { useEffect, useRef } from "react";
+
+export default function Reticle() {
+  const ring = useRef<HTMLDivElement>(null);
+  const dot = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!window.matchMedia("(pointer: fine)").matches) return;
+    document.body.classList.add("has-reticle");
+    let x = innerWidth / 2, y = innerHeight / 2, rx = x, ry = y, raf = 0;
+    const move = (e: PointerEvent) => {
+      x = e.clientX; y = e.clientY;
+      if (dot.current) dot.current.style.transform = `translate(${x}px, ${y}px)`;
+      const hit = (e.target as HTMLElement).closest("a, button, .item, .quest-tab");
+      ring.current?.classList.toggle("lock", !!hit);
+    };
+    const loop = () => {
+      rx += (x - rx) * 0.2; ry += (y - ry) * 0.2;
+      if (ring.current) ring.current.style.translate = `${rx}px ${ry}px`;
+      raf = requestAnimationFrame(loop);
+    };
+    addEventListener("pointermove", move);
+    loop();
+    return () => { removeEventListener("pointermove", move); cancelAnimationFrame(raf); document.body.classList.remove("has-reticle"); };
+  }, []);
+  return (
+    <>
+      <div ref={ring} className="reticle" style={{ display: "var(--reticle-display, block)" }} />
+      <div ref={dot} className="reticle-dot" />
+      <style>{`@media (pointer: coarse) { .reticle, .reticle-dot { display: none !important; } }`}</style>
+    </>
+  );
+}

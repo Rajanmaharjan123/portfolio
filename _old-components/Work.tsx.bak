@@ -1,0 +1,74 @@
+"use client";
+import { useState, type PointerEvent } from "react";
+import SectionHead from "./Section";
+import { ItemIcon } from "./Icons";
+import { categories, inventory } from "@/lib/data";
+
+function tilt(e: PointerEvent<HTMLElement>) {
+  if (e.pointerType !== "mouse") return;
+  const el = e.currentTarget;
+  const r = el.getBoundingClientRect();
+  const px = (e.clientX - r.left) / r.width;
+  const py = (e.clientY - r.top) / r.height;
+  el.style.transform = `rotateX(${(0.5 - py) * 8}deg) rotateY(${(px - 0.5) * 10}deg)`;
+  el.style.setProperty("--gx", `${px * 100}%`);
+  el.style.setProperty("--gy", `${py * 100}%`);
+}
+function reset(e: PointerEvent<HTMLElement>) { e.currentTarget.style.transform = ""; }
+
+const INITIAL = 6;
+
+export default function Work() {
+  const [cat, setCat] = useState<(typeof categories)[number]>("All");
+  const [all, setAll] = useState(false);
+  const items = inventory.filter((i) => cat === "All" || i.category === cat);
+  const visible = all || cat !== "All" ? items : items.slice(0, INITIAL);
+
+  return (
+    <section className="section" id="work">
+      <div className="container">
+        <SectionHead
+          index="03" kicker="Selected work" title="Loot" accent="Inventory"
+          note={`${inventory.length} apps, SDKs and games — from LiDAR scanners to national ride-sharing.`}
+        />
+        <div className="chips-scroll" role="tablist" aria-label="Filter projects">
+          {categories.map((c) => {
+            const n = c === "All" ? inventory.length : inventory.filter((i) => i.category === c).length;
+            return (
+              <button key={c} role="tab" aria-selected={cat === c} className={cat === c ? "on" : ""} onClick={() => setCat(c)}>
+                {c} <small>{n}</small>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="inv">
+          {visible.map((it, i) => (
+            <div className="inv-cell" key={it.name} style={{ animationDelay: `${(i % 6) * 50}ms` }}>
+              <article className={`item ${it.rarity}`} onPointerMove={tilt} onPointerLeave={reset}>
+                <div className="item-glare" />
+                <div className="item-top">
+                  <div className="item-icon"><ItemIcon name={it.icon} /></div>
+                  <span className="item-rarity">◆ {it.rarity}</span>
+                </div>
+                <h3>{it.name}</h3>
+                <div className="item-type">{it.type} · {it.category}</div>
+                <p>{it.blurb}</p>
+                {it.result && <div className="item-result">▲ {it.result}</div>}
+                <div className="tags">{it.stack.map((s) => <span key={s}>{s}</span>)}</div>
+              </article>
+            </div>
+          ))}
+        </div>
+
+        {cat === "All" && items.length > INITIAL && (
+          <div className="more">
+            <button className="btn btn-ghost" onClick={() => setAll((a) => !a)} aria-expanded={all}>
+              {all ? "Show fewer" : `Show all ${items.length} projects`}
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}

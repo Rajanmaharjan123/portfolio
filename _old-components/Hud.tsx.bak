@@ -1,0 +1,62 @@
+"use client";
+import { useEffect, useState } from "react";
+
+const LINKS = [
+  { id: "stats", label: "Stats", k: "1" },
+  { id: "quests", label: "Quests", k: "2" },
+  { id: "inventory", label: "Inventory", k: "3" },
+  { id: "trophies", label: "Trophies", k: "4" },
+  { id: "lobby", label: "Contact", k: "5" },
+];
+
+export default function Hud() {
+  const [active, setActive] = useState("");
+  const [xp, setXp] = useState(0);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const h = document.documentElement;
+      setXp((h.scrollTop / (h.scrollHeight - h.clientHeight || 1)) * 100);
+    };
+    const io = new IntersectionObserver(
+      (es) => es.forEach((e) => e.isIntersecting && setActive(e.target.id)),
+      { rootMargin: "-45% 0px -50% 0px" }
+    );
+    LINKS.forEach((l) => { const el = document.getElementById(l.id); if (el) io.observe(el); });
+    const keys = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement).closest("input, textarea")) return;
+      const l = LINKS.find((x) => x.k === e.key);
+      if (l) document.getElementById(l.id)?.scrollIntoView({ behavior: "smooth" });
+    };
+    addEventListener("scroll", onScroll, { passive: true });
+    addEventListener("keydown", keys);
+    onScroll();
+    return () => { io.disconnect(); removeEventListener("scroll", onScroll); removeEventListener("keydown", keys); };
+  }, []);
+
+  return (
+    <header className="hud">
+      <div className="container hud-row">
+        <a href="#top" className="hud-id" aria-label="Back to top">
+          <span className="hud-avatar">R</span>
+          <span className="hud-hp">
+            <span>RAJAN_M · LVL 6</span>
+            <span className="hud-hp-bar"><i style={{ width: "92%" }} /></span>
+          </span>
+        </a>
+        <nav className={`hud-links ${open ? "open" : ""}`} onClick={() => setOpen(false)}>
+          {LINKS.map((l) => (
+            <a key={l.id} href={`#${l.id}`} className={active === l.id ? "active" : ""}>
+              <span className="k">{l.k}</span>{l.label}
+            </a>
+          ))}
+        </nav>
+        <button className="btn btn-ghost hud-menu" onClick={() => setOpen((o) => !o)} aria-label="Menu">
+          {open ? "✕ Close" : "☰ Menu"}
+        </button>
+      </div>
+      <div className="hud-xp" style={{ width: `${xp}%` }} />
+    </header>
+  );
+}

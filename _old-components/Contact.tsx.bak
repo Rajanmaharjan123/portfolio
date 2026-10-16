@@ -1,0 +1,60 @@
+"use client";
+import { useState } from "react";
+import Reveal from "./Reveal";
+import SectionHead from "./Section";
+import { DownloadIcon, MailIcon } from "./Icons";
+import { profile } from "@/lib/data";
+
+const STEPS = [
+  ["Brief", "Tell me the idea, the app or the bug."],
+  ["Plan", "Scope, estimate and milestones within 48h."],
+  ["Build", "Weekly TestFlight builds you can tap."],
+  ["Ship", "App Store release and handover."],
+];
+
+export default function Contact() {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(profile.email); setCopied(true); setTimeout(() => setCopied(false), 1600); } catch {}
+  };
+  return (
+    <section className="section" id="contact">
+      <div className="container">
+        <SectionHead index="06" kicker="Contact" title="Multiplayer" accent="Lobby" />
+        <div className="lobby">
+          <Reveal className="panel lobby-main">
+            <span className="hero-tag">Open for freelance & full-time</span>
+            <h3>Looking for a <em>co‑op</em> partner?</h3>
+            <p>Senior iOS roles, AR / LiDAR products, app rescues or a fresh build — send an invite and I&apos;ll reply within a day.</p>
+            <div className="hero-actions">
+              <a className="btn btn-primary" href={`mailto:${profile.email}?subject=Project%20enquiry`}><MailIcon /> Send invite</a>
+              <a className="btn btn-ghost" href={profile.linkedin} target="_blank" rel="noreferrer">LinkedIn ↗</a>
+              <a className="btn btn-link" href={profile.cv} download><DownloadIcon /> Download CV</a>
+            </div>
+            <ol className="steps">
+              {STEPS.map(([t, d], i) => (
+                <li key={t}><span>0{i + 1}</span><b>{t}</b><small>{d}</small></li>
+              ))}
+            </ol>
+          </Reveal>
+          <Reveal className="panel term" delay={100}>
+            <div className="term-bar"><i /><i /><i /><span>rajan@kathmandu</span></div>
+            <div className="term-body">
+              <div><span className="p">$</span> whoami --contact</div>
+              <div className="row">
+                <span className="dim">email</span>
+                <a href={`mailto:${profile.email}`}>{profile.email}</a>
+                <button className="copy" onClick={copy} aria-live="polite">{copied ? "COPIED ✓" : "COPY"}</button>
+              </div>
+              <div className="row"><span className="dim">phone</span><a href={`tel:${profile.phone.replace(/-/g, "")}`}>{profile.phone}</a></div>
+              <div className="row"><span className="dim">linkedin</span><a href={profile.linkedin} target="_blank" rel="noreferrer">in/rajan1122</a></div>
+              <div className="row"><span className="dim">region</span><span>{profile.location} · {profile.timezone}</span></div>
+              <div className="row"><span className="dim">status</span><span className="ok">● accepting projects</span></div>
+              <div><span className="p">$</span> <span className="blink">▌</span></div>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}

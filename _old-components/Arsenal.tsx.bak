@@ -1,0 +1,69 @@
+"use client";
+import { useMemo, useState } from "react";
+import Reveal from "./Reveal";
+import SectionHead from "./Section";
+import { techGroups } from "@/lib/data";
+
+export default function Arsenal() {
+  const [q, setQ] = useState("");
+  const [group, setGroup] = useState<string>("all");
+  const total = techGroups.reduce((a, g) => a + g.items.length, 0);
+  const needle = q.trim().toLowerCase();
+
+  const shown = useMemo(
+    () =>
+      techGroups
+        .filter((g) => group === "all" || g.id === group)
+        .map((g) => ({ ...g, items: g.items.filter((t) => !needle || `${t.name} ${t.note ?? ""}`.toLowerCase().includes(needle)) }))
+        .filter((g) => g.items.length),
+    [group, needle]
+  );
+  const count = shown.reduce((a, g) => a + g.items.length, 0);
+
+  return (
+    <section className="section" id="arsenal">
+      <div className="container">
+        <SectionHead
+          index="02" kicker="Tech stack" title="Tech" accent="Arsenal"
+          note={<>{total} technologies unlocked across iOS, spatial computing, real-time systems and hardware.</>}
+        />
+
+        <Reveal className="arsenal-bar">
+          <div className="seg" role="tablist" aria-label="Filter technologies">
+            <button role="tab" aria-selected={group === "all"} className={group === "all" ? "on" : ""} onClick={() => setGroup("all")}>
+              All <small>{total}</small>
+            </button>
+            {techGroups.map((g) => (
+              <button key={g.id} role="tab" aria-selected={group === g.id} className={`${group === g.id ? "on" : ""} c-${g.color}`} onClick={() => setGroup(g.id)}>
+                {g.label} <small>{g.items.length}</small>
+              </button>
+            ))}
+          </div>
+          <label className="search">
+            <span className="sr">Search technologies</span>
+            <svg viewBox="0 0 24 24" aria-hidden><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search e.g. LiDAR, MQTT…" />
+          </label>
+        </Reveal>
+
+        <div className="arsenal" aria-live="polite">
+          {shown.map((g) => (
+            <div key={g.id} className={`panel loadout c-${g.color}`}>
+              <h3>{g.label}<small>{g.items.length}</small></h3>
+              <ul>
+                {g.items.map((t) => (
+                  <li key={t.name}>
+                    <span className="pip" />
+                    <span className="t-name">{t.name}</span>
+                    {t.note && <span className="t-note">{t.note}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          {!count && <p className="empty">No match for “{q}”. Ask me anyway — I learn fast.</p>}
+        </div>
+      </div>
+    </section>
+  );
+}

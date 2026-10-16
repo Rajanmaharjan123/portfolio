@@ -1,0 +1,27 @@
+import Reveal from "./Reveal";
+import SectionHead from "./Section";
+import { ServiceGlyph } from "./Icons";
+import { services } from "@/lib/data";
+
+export default function Services() {
+  return (
+    <section className="section" id="services">
+      <div className="container">
+        <SectionHead
+          index="01" kicker="What I build" title="Choose your" accent="Class"
+          note="Pick the build you need. Each one is something I've already shipped to real users."
+        />
+        <div className="services">
+          {services.map((s, i) => (
+            <Reveal key={s.title} className="panel service" delay={(i % 3) * 70}>
+              <div className="service-icon"><ServiceGlyph name={s.icon} /></div>
+              <h3>{s.title}</h3>
+              <p>{s.blurb}</p>
+              <div className="tags">{s.tags.map((t) => <span key={t}>{t}</span>)}</div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

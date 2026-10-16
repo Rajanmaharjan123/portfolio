@@ -120,7 +120,7 @@ export default function Pamphlet() {
     <aside className={`pamphlet ${side} ${e ? "open" : ""}`} aria-hidden={!e} aria-label={`Exhibit: ${cur.title}`} style={{ ["--accent" as string]: cur.accent }}>
       <div className="pam-holo" />
       <header>
-        <span className="pam-no">Exhibit No. {String(cur.no).padStart(2, "0")} · Gallery {hall?.numeral} — {hall?.name}</span>
+        <span className="pam-no">Exhibit No. {String(cur.no).padStart(2, "0")} · {hall ? `Gallery ${hall.numeral} — ${hall.name}` : "The Entrance"}</span>
         <button className="pam-x" onClick={() => museum.set({ selected: null })} aria-label="Close pamphlet">✕</button>
       </header>
       <h2>{cur.title}</h2>

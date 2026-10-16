@@ -89,7 +89,7 @@ function Stanchions() {
 function OrnateFrame({ glow }: { glow: string }) {
   const W = 2.3, H = 2.75, b = 0.24;
   return (
-    <group position={[0, 3.1, 0]}>
+    <group position={[0, 2.5, 0]}>
       {/* outer moulding */}
       {[[0, H / 2 + b / 2, W + 2 * b, b], [0, -H / 2 - b / 2, W + 2 * b, b]].map(([x, y, w, h], i) => (
         <mesh key={`h${i}`} position={[x, y, 0.1]} material={M.gold}><boxGeometry args={[w, h, 0.16]} /></mesh>
@@ -119,33 +119,6 @@ function OrnateFrame({ glow }: { glow: string }) {
         {[-0.45, 0.45].map((x) => <mesh key={x} position={[x, -0.15, -0.2]} rotation={[0.9, 0, 0]} material={M.brass}><cylinderGeometry args={[0.015, 0.015, 0.5, 8]} /></mesh>)}
       </group>
       <mesh position={[0, 0.3, 0.09]} material={holo("#ffd59a", 0.12)}><planeGeometry args={[W, H * 0.8]} /></mesh>
-    </group>
-  );
-}
-
-function Vitrine({ color, count }: { color: string; count: number }) {
-  const g = useRef<THREE.Group>(null);
-  useFrame((s) => {
-    g.current?.children.forEach((c, i) => { c.position.y = 0.15 + ((i % 3) * 0.28) + Math.sin(s.clock.elapsedTime * 1.2 + i) * 0.04; });
-  });
-  const orb = useMemo(() => new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.9, metalness: 0.3, roughness: 0.3 }), [color]);
-  return (
-    <group position={[0, 1.12, 0]}>
-      <mesh position={[0, 0.62, 0]} material={M.glass}><boxGeometry args={[0.95, 1.2, 0.95]} /></mesh>
-      {[[-1, -1], [-1, 1], [1, -1], [1, 1]].map(([x, z]) => (
-        <mesh key={`${x}${z}`} position={[x * 0.47, 0.62, z * 0.47]} material={M.gold}><boxGeometry args={[0.035, 1.22, 0.035]} /></mesh>
-      ))}
-      <mesh position={[0, 1.24, 0]} material={M.gold}><boxGeometry args={[1.02, 0.05, 1.02]} /></mesh>
-      <group ref={g}>
-        {Array.from({ length: count }).map((_, i) => {
-          const col = i % 3, row = Math.floor(i / 3) % 4;
-          return (
-            <mesh key={i} position={[(col - 1) * 0.26, 0.15, (row - 1.5) * 0.18]} material={orb}>
-              <icosahedronGeometry args={[0.055, 1]} />
-            </mesh>
-          );
-        })}
-      </group>
     </group>
   );
 }
@@ -221,7 +194,7 @@ export default function Exhibit({ e, x, df = 4.2 }: { e: Ex; x: number; df?: num
           <OrnateFrame glow={selected || hovered ? e.accent : "#ffd59a"} />
         </group>
         {near && (
-          <Html transform position={[0, 3.1, 0.2]} distanceFactor={df} zIndexRange={[20, 0]}>
+          <Html transform position={[0, 2.5, 0.2]} distanceFactor={df} zIndexRange={[20, 0]}>
             <div ref={banner} className={`portrait ${selected ? "on" : ""}`} style={{ ["--accent" as string]: e.accent }} onClick={click}>
               <span className="banner-no">No. {String(e.no).padStart(2, "0")} · {e.payload.kind === "job" && e.payload.q.status === "ACTIVE" ? "Current" : "Archive"}</span>
               <b>{e.title}</b>
@@ -240,6 +213,19 @@ export default function Exhibit({ e, x, df = 4.2 }: { e: Ex; x: number; df?: num
   const isAvatar = e.art === "avatar";
   const jar = e.payload.kind === "project";
   const rot = e.side === 0 ? 0 : -e.side * 0.55;
+
+  /* Skills gallery: no objects, just the banner standing at eye level */
+  if (e.payload.kind === "tech") {
+    return (
+      <group position={[e.side * x, 0, e.z]} rotation={[0, rot, 0]}>
+        {near && (
+          <Html transform position={[0, 1.8, 0]} distanceFactor={df * 0.85} zIndexRange={[20, 0]}>
+            {label}
+          </Html>
+        )}
+      </group>
+    );
+  }
 
   if (isAvatar) {
     return (
@@ -270,7 +256,6 @@ export default function Exhibit({ e, x, df = 4.2 }: { e: Ex; x: number; df?: num
       <group onPointerOver={over} onPointerOut={out} onClick={click}>
         {isDesk ? <Desk /> : <Pedestal color={e.accent} rarity={e.payload.kind === "project" ? e.payload.p.rarity : undefined} cushion={e.art !== "vitrine"} />}
         {jar && <BellJar />}
-        {e.art === "vitrine" && e.payload.kind === "tech" && <Vitrine color={e.accent} count={e.payload.g.items.length} />}
         {!isDesk && e.art !== "vitrine" && (
           <Float speed={1.6} rotationIntensity={0.15} floatIntensity={0.18} floatingRange={[-0.025, 0.025]}>
             <group position={[0, 1.78, 0]}><Artifact kind={e.art} color={e.accent} /></group>
@@ -281,7 +266,7 @@ export default function Exhibit({ e, x, df = 4.2 }: { e: Ex; x: number; df?: num
       </group>
       {!isDesk && <Stanchions />}
       {near && (
-        <Html transform position={[0, isDesk ? 2.75 : 3.2, 0]} distanceFactor={df} zIndexRange={[20, 0]}>
+        <Html transform position={isDesk ? [0, 2.35, 0.2] : [e.side * (x < 2.5 ? 1.35 : 1.75), 1.85, 0.1]} distanceFactor={df * 0.8} zIndexRange={[20, 0]}>
           {label}
         </Html>
       )}

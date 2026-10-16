@@ -1,12 +1,13 @@
 "use client";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { exhibits, halls, LENGTH, PX_PER_UNIT, START_Z, travel, viewingZ, walkTo, zToProgress } from "@/lib/museum";
+import { ENTRANCE, exhibits, halls, LENGTH, PX_PER_UNIT, START_Z, progressFromScroll, pxPerUnit, travel, viewingZ, walkTo, zFromScroll, zToProgress } from "@/lib/museum";
 import { impact, profile, quests, techGroups } from "@/lib/data";
 import { museum, useMuseum } from "@/lib/store";
 import Pamphlet, { go } from "./Pamphlet";
 import Catalogue from "./Catalogue";
 import Loader from "./Loader";
+import MobileControls from "./MobileControls";
 
 const Scene = dynamic(() => import("./Scene"), { ssr: false });
 
@@ -14,8 +15,7 @@ function useProgress() {
   const [p, setP] = useState(0);
   useEffect(() => {
     const f = () => {
-      const max = document.documentElement.scrollHeight - innerHeight || 1;
-      setP(Math.min(1, Math.max(0, scrollY / max)));
+      setP(progressFromScroll());
     };
     f();
     addEventListener("scroll", f, { passive: true });
@@ -32,6 +32,8 @@ export default function Museum() {
   const guide = useMuseum((s) => s.guide);
   const catalogue = useMuseum((s) => s.catalogue);
   const [webgl, setWebgl] = useState(true);
+  const [px, setPx] = useState(PX_PER_UNIT);
+  useEffect(() => { const f = () => setPx(pxPerUnit()); f(); addEventListener("resize", f); return () => removeEventListener("resize", f); }, []);
   const [touch, setTouch] = useState(false);
 
   const z = START_Z - p * LENGTH;
@@ -64,7 +66,7 @@ export default function Museum() {
         let next;
         if (curIdx >= 0) next = exhibits[curIdx + (fwd ? 1 : -1)];
         else {
-          const camZ = START_Z - (scrollY / (document.documentElement.scrollHeight - innerHeight || 1)) * LENGTH;
+          const camZ = zFromScroll();
           next = fwd ? exhibits.find((e) => viewingZ(e) < camZ - 0.5) : [...exhibits].reverse().find((e) => viewingZ(e) > camZ + 0.5);
         }
         if (next) go(next);
@@ -83,8 +85,7 @@ export default function Museum() {
     const check = () => {
       clearTimeout(t);
       t = setTimeout(() => {
-        const max = document.documentElement.scrollHeight - innerHeight || 1;
-        const camZ = START_Z - (scrollY / max) * LENGTH;
+        const camZ = zFromScroll();
         if (Date.now() < travel.until && Math.abs(camZ - travel.z) > 0.5) return; // still gliding there
         if (Math.abs(camZ - viewingZ(e)) > 7) museum.set({ selected: null });
       }, 250);
@@ -165,7 +166,7 @@ export default function Museum() {
             <a href={profile.linkedin} target="_blank" rel="noreferrer">LinkedIn ↗</a>
             <a href={profile.cv} download>Download CV</a>
           </div>
-          <p className="ticket-hint">{touch ? "Swipe up outside this card to walk · tap an exhibit" : "Scroll or W / S to walk · move mouse to look · click an exhibit"}</p>
+          <p className="ticket-hint">{touch ? "Hold ▲ or swipe up to walk · tilt your phone to look · tap an exhibit" : "Scroll or W / S to walk · move mouse to look · click an exhibit"}</p>
         </div>
       </section>
 
@@ -207,6 +208,16 @@ export default function Museum() {
             <span>Floor guide</span>
             <button className="pam-x" onClick={() => museum.set({ guide: false })} aria-label="Close floor guide">✕</button>
           </header>
+          <div className="guide-hall">
+            <button className="guide-hall-name" onClick={() => { museum.set({ selected: null, guide: false }); walkTo(START_Z); }}>
+              <span>✦</span>{ENTRANCE.name}<small>{ENTRANCE.tagline}</small>
+            </button>
+            <ul>
+              {exhibits.filter((e) => e.hall === ENTRANCE.id).map((e) => (
+                <li key={e.id}><button onClick={() => go(e)}><span>No. {String(e.no).padStart(2, "0")}</span>{e.title}</button></li>
+              ))}
+            </ul>
+          </div>
           {halls.map((h) => (
             <div key={h.id} className="guide-hall">
               <button className="guide-hall-name" onClick={() => { museum.set({ selected: null, guide: false }); walkTo(h.z - 3); }}>
@@ -224,10 +235,11 @@ export default function Museum() {
       </div>
 
       <Pamphlet />
+      <MobileControls hidden={intro > 0.15} />
       <Catalogue />
 
       {/* the corridor's length in scroll distance */}
-      <div style={{ height: `calc(${Math.round(LENGTH * PX_PER_UNIT)}px + 100vh)` }} aria-hidden />
+      <div style={{ height: `calc(${Math.round(LENGTH * px)}px + 100lvh)` }} aria-hidden />
     </>
   );
 }

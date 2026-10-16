@@ -4,8 +4,9 @@ import { PerformanceMonitor, Preload } from "@react-three/drei";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import { AVATAR_Z, END_Z, LENGTH, PORTRAIT_X, START_Z, exhibits, lightAt } from "@/lib/museum";
+import { AVATAR_Z, END_Z, PORTRAIT_X, START_Z, exhibits, lightAt, zFromScroll } from "@/lib/museum";
 import { museum } from "@/lib/store";
+import { look } from "@/lib/look";
 import Architecture, { HALF_W } from "./Architecture";
 import Chandeliers from "./Chandeliers";
 import Exhibit from "./Exhibit";
@@ -23,7 +24,6 @@ function Env() {
   return null;
 }
 
-const look = { x: 0, y: 0 };
 
 /* Critically-damped follow (like Unity's SmoothDamp): eases in and out, never overshoots */
 function smoothDamp(cur: number, target: number, vel: { v: number }, time: number, dt: number) {
@@ -51,14 +51,13 @@ function Walker() {
 
   useFrame((_, dt) => {
     dt = Math.min(dt, 0.05);
-    const max = document.documentElement.scrollHeight - innerHeight || 1;
-    const p = Math.min(1, Math.max(0, scrollY / max));
-    const goal = START_Z - p * LENGTH;
-    pos.current = smoothDamp(pos.current, goal, vel.current, 0.45, dt);
+    const goal = zFromScroll();
+    // phones get a slightly longer glide so momentum scrolling feels like walking
+    pos.current = smoothDamp(pos.current, goal, vel.current, size.width < 760 ? 0.6 : 0.45, dt);
     camera.position.set(0, 1.65, pos.current);
 
     // mouse-look is smoothed too, so the view drifts instead of snapping
-    const k = 1 - Math.exp(-dt * 3);
+    const k = 1 - Math.exp(-dt * (look.source === "gyro" ? 7 : 3));
     lookS.current.x += (look.x - lookS.current.x) * k;
     lookS.current.y += (look.y - lookS.current.y) * k;
     const lx = lookS.current.x, ly = lookS.current.y;
@@ -69,12 +68,14 @@ function Walker() {
     if (ex) {
       const sideX = ex.wall ? ex.side * (HALF_W - 0.1) : ex.side * (narrow ? 2.1 : 2.75);
       // look at the exhibit, nudged so the pamphlet doesn't cover it
-      want.set(sideX * (narrow ? 0.85 : 1) - (narrow ? 0 : ex.side * 0.9), ex.wall ? 2.9 : (ex.art === "desk" ? 1.5 : 2.2), ex.z);
+      want.set(sideX * (narrow ? 0.85 : 1) - (narrow ? 0 : ex.side * 0.9), ex.wall ? 2.4 : (ex.art === "desk" ? 1.5 : 1.9), ex.z);
       if (ex.art === "desk") want.set(0, 1.6, END_Z - 8);
       if (ex.art === "avatar") want.set(PORTRAIT_X + (narrow ? 0 : 0.9), narrow ? 1.2 : 2.1, ex.z);
     } else if (pos.current > AVATAR_Z + 1.2) {
       // at the entrance the eye is drawn to the portrait
-      want.set(PORTRAIT_X + lx * 1.2 - (aspect > 1.3 ? 1.1 : 0), narrow ? 0.4 : 2.1 + ly * 0.6, AVATAR_Z);
+      // on phones, aim low only from afar (so the portrait clears the intro card), then level out as you approach
+      const far = Math.min(1, Math.max(0, (pos.current - (AVATAR_Z + 1.2)) / 4));
+      want.set(PORTRAIT_X + lx * 1.2 - (aspect > 1.3 ? 1.1 : 0), narrow ? 2.0 - 1.6 * far : 2.1 + ly * 0.6, AVATAR_Z);
     } else {
       want.set(lx * 2.6, 1.6 + ly * 0.9, pos.current - 10);
     }
@@ -100,6 +101,7 @@ export default function Scene() {
   useEffect(() => {
     const move = (e: PointerEvent) => {
       if (e.pointerType !== "mouse") return;
+      look.source = "mouse";
       look.x = (e.clientX / innerWidth) * 2 - 1;
       look.y = -((e.clientY / innerHeight) * 2 - 1);
     };

@@ -382,3 +382,52 @@ body.is-loading { overflow: hidden; }
 .pamphlet { transition: transform .55s cubic-bezier(.2,.8,.2,1), opacity .35s ease; }
 .guide-paper { animation-duration: .45s; }
 html { scroll-behavior: auto; }
+
+/* ---------- Mobile controls ---------- */
+.mpad, .mgyro { position: fixed; z-index: 22; bottom: calc(96px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: center; gap: 10px;
+  opacity: 0; transform: translateY(14px); pointer-events: none; transition: opacity .35s ease, transform .45s cubic-bezier(.2,.8,.2,1); }
+.mpad { right: 14px; }
+.mgyro { left: 14px; }
+.mpad.show, .mgyro.show { opacity: 1; transform: none; pointer-events: auto; }
+.mpad-btn { width: 66px; height: 66px; display: grid; place-items: center; border-radius: 50%; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  background: radial-gradient(circle at 50% 35%, #f6dc95, #c99b4a 70%, #9b7637); border: 1px solid #7a5622;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.45), inset 0 -3px 6px rgba(0,0,0,.25), 0 6px 18px rgba(0,0,0,.5), 0 0 0 4px rgba(18,13,11,.55), 0 0 0 5px rgba(201,164,92,.5);
+  transition: transform .12s ease, box-shadow .2s; }
+.mpad-btn svg { width: 26px; height: 26px; fill: #2a1b0c; }
+.mpad-btn:active { transform: scale(.92); box-shadow: inset 0 2px 8px rgba(0,0,0,.35), 0 3px 10px rgba(0,0,0,.5), 0 0 0 4px rgba(18,13,11,.55), 0 0 0 5px rgba(95,232,255,.6), 0 0 22px rgba(95,232,255,.35); }
+.mpad-btn.sm { width: 46px; height: 46px; }
+.mpad-btn.sm svg { width: 18px; height: 18px; }
+.mgyro-btn { min-width: 46px; height: 46px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 23px;
+  background: rgba(18,13,11,.78); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(201,164,92,.55); color: var(--gold-2);
+  font-family: var(--caps); font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
+.mgyro-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+.mgyro-btn.on { color: var(--holo); border-color: var(--holo); box-shadow: 0 0 16px rgba(95,232,255,.3); }
+
+.gyro-card { position: fixed; z-index: 70; left: 12px; right: 12px; bottom: calc(100px + env(safe-area-inset-bottom)); padding: 20px 18px 16px; text-align: center; color: var(--ink);
+  background: linear-gradient(180deg, #f7efde, #ecdfc2); border: 1px solid var(--gold-deep); box-shadow: 0 20px 60px rgba(0,0,0,.6), inset 0 0 0 5px #f7efde, inset 0 0 0 6px rgba(155,118,55,.55);
+  animation: cardUp .5s cubic-bezier(.2,.8,.2,1); }
+@keyframes cardUp { from { opacity: 0; transform: translateY(24px); } }
+.gyro-icon { width: 52px; height: 52px; margin: 0 auto 8px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--gold-deep); color: var(--gold-deep); animation: tilt 2.2s ease-in-out infinite; }
+.gyro-icon svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+@keyframes tilt { 25% { transform: rotate(-14deg); } 75% { transform: rotate(14deg); } }
+.gyro-card b { display: block; font-family: var(--serif); font-size: 22px; line-height: 1.15; }
+.gyro-card p { font-size: 14px; color: #5a4632; margin: 6px 0 14px; }
+.gyro-card .actions { justify-content: center; }
+.gyro-card .btn-line { color: #6d4f1e; background: transparent; border-color: var(--gold-deep); backdrop-filter: none; }
+
+/* ---------- Phone-friendly touches ---------- */
+@media (max-width: 760px) {
+  .minimap { padding: 10px 12px 8px; bottom: calc(10px + env(safe-area-inset-bottom)); }
+  .mm-hall { width: 26px; height: 26px; margin: -13px 0 0 -13px; }      /* bigger tap targets */
+  .mm-label { font-size: 10px; }
+  .pamphlet::after { content: ""; position: absolute; top: 8px; left: 50%; width: 42px; height: 4px; margin-left: -21px; border-radius: 2px; background: rgba(155,118,55,.45); }
+  .pamphlet { padding-top: 24px; }
+  .pam-x { width: 42px; height: 42px; }
+  .pamphlet footer button { min-height: 46px; padding: 8px 10px; }
+  .guide-paper { width: 100vw; }
+  .guide-hall li button { padding: 10px 0; }
+  .hud { padding-left: 12px; padding-right: 12px; }
+  .reticle { display: none; }
+}
+/* stop iOS from highlighting / zooming while walking */
+.stage, .mpad, .mgyro { -webkit-user-select: none; user-select: none; }

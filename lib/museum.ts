@@ -90,7 +90,7 @@ hall("craft", "I", "Hall of Craft", "Services you can commission", services.map(
 })));
 
 hall("arsenal", "II", "The Arsenal", `${techGroups.reduce((a, g) => a + g.items.length, 0)} technologies on display`, techGroups.map((g) => ({
-  title: g.label, subtitle: `${g.items.length} instruments`, art: "vitrine" as ArtKind, accent: holo[g.color], payload: { kind: "tech", g },
+  title: g.label, subtitle: `${g.items.length} skills`, art: "vitrine" as ArtKind, accent: holo[g.color], payload: { kind: "tech", g },
 })));
 
 hall("works", "III", "Gallery of Works", `${inventory.length} apps, SDKs & games`, inventory.map((p) => ({
@@ -133,10 +133,18 @@ export function progressFromScroll(y = typeof window !== "undefined" ? window.sc
 /* scroll <-> corridor position */
 export function zToProgress(zz: number) { return Math.min(1, Math.max(0, (START_Z - zz) / LENGTH)); }
 /* set while the page is gliding to an exhibit, so "walked away" checks can ignore it */
-export const travel = { z: 0, until: 0 };
+export const travel = { z: 0, until: 0, active: false };
+/* any manual input ends an automatic glide */
+if (typeof window !== "undefined") {
+  const stop = () => { travel.active = false; };
+  addEventListener("wheel", stop, { passive: true });
+  addEventListener("touchstart", stop, { passive: true });
+  addEventListener("keydown", stop);
+}
 export function walkTo(zz: number, smooth = true) {
   travel.z = zz;
-  travel.until = Date.now() + 2500;
+  travel.until = Date.now() + 6000;
+  travel.active = true;
   window.scrollTo({ top: Math.max(0, (START_Z - zz) * pxPerUnit()), behavior: smooth ? "smooth" : "auto" });
 }
 /* where the visitor stands to look at an exhibit */

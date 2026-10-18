@@ -46,6 +46,8 @@ export default function Catalogue() {
                 <h3>{p.name} <small>{p.type}</small></h3>
                 <p>{p.blurb}</p>
                 {p.result && <p className="result">▲ {p.result}</p>}
+                {p.details && <ul className="cat-details">{p.details.map((d) => <li key={d}>{d}</li>)}</ul>}
+                {p.link && <p><a href={p.link} target="_blank" rel="noreferrer">{p.link.replace(/^https?:\/\//, "")} ↗</a></p>}
                 <div className="tags">{p.stack.map((t) => <span key={t}>{t}</span>)}</div>
               </article>
             ))}
@@ -56,7 +58,8 @@ export default function Catalogue() {
           <h2><span>V</span> Experience</h2>
           {quests.map((q) => (
             <article key={q.id} className="cat-job">
-              <h3>{q.title} <small>@ {q.company} · {q.period}</small></h3>
+              <h3>{q.title} <small>@ {q.company}{q.client ? ` · client: ${q.client}` : ""}{q.location ? ` · ${q.location}` : ""} · {q.period}</small></h3>
+              {q.project && <p>{q.project}</p>}
               <ul>{q.objectives.map((o, i) => <li key={i}>{o}</li>)}</ul>
             </article>
           ))}

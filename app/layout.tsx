@@ -4,11 +4,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "The Maharjan Collection — Rajan Maharjan, Senior iOS Developer",
   description:
-    "Senior iOS Developer in Kathmandu with 5+ years shipping Swift, SwiftUI, ARKit / RealityKit, LiDAR RoomPlan, ride-sharing and fintech apps. Available for freelance and full-time.",
-  keywords: ["iOS developer", "Swift", "SwiftUI", "ARKit", "RealityKit", "LiDAR", "RoomPlan", "Flutter", "Nepal", "freelance"],
+    "Senior iOS Developer in Kathmandu with 6+ years shipping Swift, SwiftUI and UIKit apps — WebRTC real-time communication, ARKit / RealityKit, LiDAR RoomPlan, ride-sharing and fintech. Available for freelance and full-time.",
+  keywords: ["iOS developer", "Swift", "SwiftUI", "UIKit", "WebRTC", "ARKit", "RealityKit", "LiDAR", "RoomPlan", "Flutter", "fintech", "Nepal", "freelance"],
   openGraph: {
     title: "Rajan Maharjan — Senior iOS Developer",
-    description: "Swift · SwiftUI · ARKit · RealityKit · LiDAR · Flutter — available for projects.",
+    description: "Swift · SwiftUI · WebRTC · ARKit · RealityKit · LiDAR · Flutter — available for projects.",
     type: "website",
   },
 };

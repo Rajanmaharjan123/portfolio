@@ -86,7 +86,7 @@ export default function Museum() {
       clearTimeout(t);
       t = setTimeout(() => {
         const camZ = zFromScroll();
-        if (Date.now() < travel.until && Math.abs(camZ - travel.z) > 0.5) return; // still gliding there
+        if (travel.active) { if (Math.abs(camZ - travel.z) > 0.5) return; travel.active = false; } // still gliding there
         if (Math.abs(camZ - viewingZ(e)) > 7) museum.set({ selected: null });
       }, 250);
     };
@@ -109,7 +109,7 @@ export default function Museum() {
         <div className="ticket-card">
           <span className="ticket-kicker">Admit one · The Maharjan Collection</span>
           <h1>{profile.name}</h1>
-          <p className="ticket-role">{profile.role} · 5+ years</p>
+          <p className="ticket-role">{profile.role} · {profile.years} years</p>
           <p className="ticket-status"><i /> Available for freelance &amp; full-time · {profile.location} ({profile.timezone}) · remote-friendly</p>
           <div className="rule"><i /></div>
           <p className="ticket-copy">{profile.headline}</p>
@@ -130,10 +130,11 @@ export default function Museum() {
 
             <h3 className="ticket-h">Highlights</h3>
             <ul className="ticket-list">
-              <li>Rebuilt Sajilo&apos;s rider &amp; driver ride-sharing apps single-handedly — rider rating <b>2.8★ → 3.7★</b>, driver <b>2.2★ → 2.8★</b>.</li>
-              <li>Shipped identity &amp; banking SDKs (IDEMIA, KIBB) as XCFrameworks for Malaysian fintechs.</li>
-              <li>Built LiDAR &amp; RealityKit apps: floor plans with evacuation routes, measured 3D rooms, on-device object capture.</li>
-              <li>Real-time systems: MQTT + Protobuf chat, live map tracking, eSewa / Khalti / Prabhu Pay payments.</li>
+              <li>Rebuilt Sajilo&apos;s ride-sharing apps single-handedly — user app <b>2.8★ → 4.0★</b>, rider app <b>2.2★ → 3.2★</b>.</li>
+              <li>Founding iOS developer of the <b>Evacuation Plan App</b> (iPhone, iPad, Mac): LiDAR scans → professional evacuation plans.</li>
+              <li>WebRTC audio calls, video conferencing and AR-enabled screen sharing for <b>Anydone</b>, a US collaboration platform.</li>
+              <li>E-wallet &amp; remittance apps for Malaysia and Singapore — Merchantrade Money, Valyou, eRemit — with IDEMIA eKYC.</li>
+              <li>Payments: eSewa, Khalti, Prabhu Pay, QR · SDKs as XCFrameworks · Keychain, biometrics, E2E encryption.</li>
             </ul>
 
             <h3 className="ticket-h">Skills · {techGroups.reduce((n, g) => n + g.items.length, 0)} technologies</h3>
@@ -147,7 +148,7 @@ export default function Museum() {
             </div>
 
             <h3 className="ticket-h">Background</h3>
-            <p className="ticket-bg">B.E. Electronics &amp; Communication (NCIT, 2015–19) · robotics roots — helped build a bomb-disposal robot for the army, drones and UAV/UGV projects · speaks Nepali, Newari, English &amp; Hindi.</p>
+            <p className="ticket-bg">B.E. Electronics &amp; Communication Engineering (NCIT, 2015–19) · robotics roots — helped build the Swabhiman bomb-disposal robot for the Nepal Army, drones and UAV/UGV projects · speaks Nepali, Newari, English &amp; Hindi.</p>
 
             <h3 className="ticket-h">Inside the museum</h3>
             <ol className="ticket-map">

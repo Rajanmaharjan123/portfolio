@@ -148,12 +148,14 @@ export default function Exhibit({ e, x, df = 4.2 }: { e: Ex; x: number; df?: num
   const numeral = halls.find((h) => h.id === e.hall)?.numeral ?? "";
   // the skills behind each exhibit, shown right on its banner
   const pl = e.payload;
-  const skills: string[] =
+  const all: string[] =
     pl.kind === "tech" ? pl.g.items.map((t) => t.name)
     : pl.kind === "project" ? pl.p.stack
     : pl.kind === "service" ? pl.s.tags
     : pl.kind === "job" ? pl.q.stack
     : [];
+  const cap = pl.kind === "tech" ? 12 : pl.kind === "job" ? 6 : 7;
+  const skills = all.length > cap ? [...all.slice(0, cap), `+${all.length - cap} more`] : all;
 
   useFrame(() => {
     const d = camera.position.z - e.z; // >0 when exhibit is ahead
